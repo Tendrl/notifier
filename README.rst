@@ -2,7 +2,7 @@
 alerting
 ===============================
 
-Tendrl integration for Ceph Storage
+Tendrl sds alerting
 
 Long description TODO (rk).
 
