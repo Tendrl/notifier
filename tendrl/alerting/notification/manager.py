@@ -11,14 +11,11 @@ from tendrl.alerting.exceptions import InvalidRequest
 from tendrl.alerting.notification.exceptions import InvalidHandlerConfig
 from tendrl.alerting.notification.exceptions import NotificationDispatchError
 from tendrl.alerting.notification.exceptions import NotificationPluginError
-from tendrl.common.config import ConfigNotFound
-from tendrl.common.config import TendrlConfig
-from tendrl.common.singleton import to_singleton
-
-config = TendrlConfig()
 
 LOG = logging.getLogger(__name__)
 
+
+etcd_server = None
 
 class PluginMount(type):
 
@@ -29,7 +26,8 @@ class PluginMount(type):
             cls.register_plugin(cls)
 
     def register_plugin(cls, plugin):
-        instance = plugin()
+        global etcd_server
+        instance = plugin(etcd_server)
         cls.plugins.append(instance)
 
 
@@ -57,7 +55,7 @@ class NotificationPlugin(multiprocessing.Process):
         raise NotImplementedError()
 
     @abstractmethod
-    def set_alert_destinations(self):
+    def get_alert_destinations(self):
         raise NotImplementedError()
 
     @abstractmethod
@@ -85,7 +83,6 @@ class NotificationPlugin(multiprocessing.Process):
         self.complete.set()
 
 
-@to_singleton
 class NotificationPluginManager(object):
     def load_plugins(self):
         try:
@@ -103,18 +100,15 @@ class NotificationPluginManager(object):
                       ex, exc_info=True)
             raise NotificationPluginError(str(ex))
 
-    def __init__(self):
+    def __init__(self, etcdServer):
         try:
+            global etcd_server
+            etcd_server= etcdServer
             self.load_plugins()
-            etcd_kwargs = {
-                'port': int(config.get("common", "etcd_port")),
-                'host': config.get("common", "etcd_connection")
-            }
-            self.etcd_client = etcd.Client(**etcd_kwargs)
             notification_medium = []
             for plugin in NotificationPlugin.plugins:
                 notification_medium.append(plugin.name)
-            self.etcd_client.write(
+            etcd_server.client.write(
                 '/alerting/notification_medium/supported',
                 notification_medium
             )
@@ -122,7 +116,6 @@ class NotificationPluginManager(object):
             SyntaxError,
             ValueError,
             KeyError,
-            ConfigNotFound,
             etcd.EtcdKeyNotFound,
             etcd.EtcdConnectionFailed,
             etcd.EtcdException,
@@ -148,7 +141,8 @@ class NotificationPluginManager(object):
 
     def get_handlers(self):
         try:
-            return self.etcd_client.read(
+            global etcd_server
+            return etcd_server.client.read(
                 '/alerting/notification_medium/supported'
             ).value
         except (
