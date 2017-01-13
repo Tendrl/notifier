@@ -1,66 +1,39 @@
 import ast
 import etcd
-import json
 import logging
-from tendrl.alerting.definitions.alerting \
+from tendrl.alerting.exceptions import AlertingError
+from tendrl.alerting.manager.tendrl_definitions_alerting \
     import data as def_data
-from tendrl.alerting.etcd.exceptions import EtcdError
+from tendrl.alerting.persistence.exceptions import EtcdError
 from tendrl.alerting.persistence.tendrl_definitions \
     import TendrlDefinitions
-from tendrl.common.config import ConfigNotFound
-from tendrl.common.config import TendrlConfig
-from tendrl.common.etcdobj.etcdobj import Server as etcd_server
-from tendrl.common.singleton import to_singleton
+from tendrl.commons.persistence.etcd_persister import EtcdPersister
 import time
 import yaml
 
-config = TendrlConfig()
+
 LOG = logging.getLogger(__name__)
 
 
-@to_singleton
-class EtcdManager(object):
-    def __init__(self):
-        try:
-            etcd_kwargs = {
-                'port': int(config.get("common", "etcd_port")),
-                'host': config.get("common", "etcd_connection")
-            }
-            self.etcd_server = etcd_server(etcd_kwargs=etcd_kwargs)
-        except (
-            ConfigNotFound,
-            etcd.EtcdKeyNotFound,
-            etcd.EtcdConnectionFailed,
-            ValueError,
-            SyntaxError,
-            etcd.EtcdException,
-            TypeError
-        ) as ex:
-            raise EtcdError(str(ex))
+class AlertingEtcdPersister(EtcdPersister):
+    def __init__(self, config):
+        super(AlertingEtcdPersister, self).__init__(config)
+        self._store = self.get_store()
 
-    def write_configs(self):
-        try:
-            confs = {
-                'api_server_addr': config.get(
-                    "alerting",
-                    "api_server_addr"
-                ),
-                'api_server_port': config.get(
-                    "alerting",
-                    "api_server_port"
-                )
-            }
-            self.etcd_server.client.write(
-                '/_tendrl/config/alerting',
-                confs
-            )
-        except ConfigNotFound as ex:
-            raise EtcdError(str(ex))
+    def write_configs(self, api_server_addr, api_server_port):
+        confs = {
+            'api_server_addr': api_server_addr,
+            'api_server_port': api_server_port
+        }
+        self._store.client.write(
+            '/_tendrl/config/alerting',
+            confs
+        )
 
     def get_alerts(self, filters=None):
         alerts_arr = []
         try:
-            alerts = self.etcd_server.client.read('/alerts', recursive=True)
+            alerts = self._store.client.read('/alerts', recursive=True)
         except etcd.EtcdKeyNotFound:
             return alerts_arr
         except (
@@ -75,7 +48,7 @@ class EtcdManager(object):
             )
             raise EtcdError(str(ex))
         for child in alerts._children:
-            alerts_arr.append(json.loads(child['value']))
+            alerts_arr.append(yaml.safe_load(child['value']))
         if filters is not None:
             filtered_alerts = {}
             for f in filters:
@@ -105,14 +78,17 @@ class EtcdManager(object):
     def get_alert_types(self):
         try:
             alert_types = {}
-            alert_type_etcd_result = self.etcd_server.client.read(
+            alert_type_etcd_result = self._store.client.read(
                 '/alerting/alert_types/',
                 recursive=True
             )
             for child in alert_type_etcd_result._children:
                 component = child['key'][len('/alerting/alert_types/'):]
                 component_alert_types = ast.literal_eval(child['value'])
-                alert_types[component] = component_alert_types
+                alert_types[component.encode(
+                    'ascii',
+                    'ignore'
+                )] = component_alert_types
             return alert_types
         except (
             etcd.EtcdKeyNotFound,
@@ -128,8 +104,8 @@ class EtcdManager(object):
             )
             raise EtcdError(str(ex))
 
-    def load_defs(self):
-        self.etcd_server.save(
+    def update_defs(self):
+        self._store.save(
             TendrlDefinitions(
                 updated=str(time.time()),
                 data=yaml.safe_dump(yaml.load(def_data))
