@@ -6,14 +6,10 @@ import logging
 import multiprocessing
 import smtplib
 from socket import error
-from tendrl.common.config import TendrlConfig
 from tendrl.alerting.notification.exceptions import InvalidHandlerConfig
 from tendrl.alerting.notification.exceptions import NotificationDispatchError
 from tendrl.alerting.notification.manager import NotificationPlugin
-from tendrl.common.etcdobj.etcdobj import Server as etcd_server
-from tendrl.common.config import ConfigNotFound
 
-config = TendrlConfig()
 LOG = logging.getLogger(__name__)
 SSL_AUTHENTICATION = 'ssl'
 TLS_AUTHENTICATION = 'tls'
@@ -163,7 +159,7 @@ class EmailHandler(NotificationPlugin):
         return "Subject: [Alert] %s, %s threshold breached\n\n%s" % (
             alert.resource, alert.severity, alert.to_json_string())
 
-    def set_alert_destinations(self, alert):
+    def get_alert_destinations(self, alert):
         recipients = []
         for config in self.user_configs:
             # TODO(anmol) Ideally even check the cluster part.
@@ -172,18 +168,14 @@ class EmailHandler(NotificationPlugin):
                 recipients.append(config['email_id'])
         return recipients
 
-    def __init__(self):
+    def __init__(self, etcd_server):
         self.name = 'email'
         try:
-            etcd_kwargs = {
-                'port': int(config.get("common", "etcd_port")),
-                'host': config.get("common", "etcd_connection")
-            }
-            self.etcd_server = etcd_server(etcd_kwargs=etcd_kwargs)
+            self.etcd_server = etcd_server
             self.admin_config = {}
             self.user_configs = []
             self.complete = multiprocessing.Event()
-        except (ConfigNotFound, NotificationDispatchError) as ex:
+        except NotificationDispatchError as ex:
             raise NotificationDispatchError(str(ex))
 
     def get_mail_client(self):
@@ -201,8 +193,6 @@ class EmailHandler(NotificationPlugin):
                     self.admin_config['email_smtp_server'],
                     self.admin_config['email_smtp_port']
                 )
-                if self.admin_config['auth'] != '':
-                    server.starttls()
                 return server
             except (smtplib.socket.gaierror, smtplib.SMTPException) as ex:
                 LOG.error('Failed to fetch client for smtp server %s and smtp\
@@ -251,7 +241,7 @@ class EmailHandler(NotificationPlugin):
                     self.admin_config['email_id'],
                     self.admin_config['email_pass']
                 )
-            alert_destinations = self.set_alert_destinations(alert)
+            alert_destinations = self.get_alert_destinations(alert)
             if len(alert_destinations) == 0:
                 LOG.error(
                     'No destinations configured to send %s alert notification'
@@ -269,7 +259,6 @@ class EmailHandler(NotificationPlugin):
                 % (alert_destinations, msg),
                 exc_info=True
             )
-            server.close()
         except (
             NotificationDispatchError,
             error,
@@ -281,3 +270,6 @@ class EmailHandler(NotificationPlugin):
         ) as ex:
             LOG.error('Exception caught attempting to email %s.\
                 Error %s' % (msg, ex), exc_info=True)
+        finally:
+            server.close()
+
