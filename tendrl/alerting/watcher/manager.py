@@ -1,8 +1,8 @@
-import json
 import logging
 import multiprocessing
 import Queue
 from tendrl.commons.alert import AlertUtils
+import yaml
 
 LOG = logging.getLogger(__name__)
 
@@ -25,7 +25,7 @@ class AlertsWatchManager(multiprocessing.Process):
                     if new_alert.value is not None:
                         self.alert_queue.put(
                             AlertUtils().to_obj(
-                                json.loads(new_alert.value)
+                                yaml.safe_load(new_alert.value)
                             )
                         )
         except Queue.Full as ex:
