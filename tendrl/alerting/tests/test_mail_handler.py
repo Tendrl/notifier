@@ -1,19 +1,26 @@
+from ConfigParser import SafeConfigParser
 from mock import MagicMock
 import multiprocessing
 import pytest
 import sys
-sys.modules['tendrl.common.config'] = MagicMock()
 sys.modules['tendrl.common.log'] = MagicMock()
-from tendrl.alerting.notification.handlers.mail_handler import config
 from tendrl.alerting.notification.handlers.mail_handler import EmailHandler
 from tendrl.alerting.notification.handlers.mail_handler import \
     InvalidHandlerConfig
-from tendrl.common.etcdobj.etcdobj import Server as etcd_server
-del sys.modules['tendrl.common.config']
+from tendrl.alerting.persistence.persister import AlertingEtcdPersister
+from tendrl.commons.etcdobj.etcdobj import Server as etcd_server
 del sys.modules['tendrl.common.log']
 
 
 class Test_mail_handler(object):
+
+    def get_etcd_server(self):
+        cParser = SafeConfigParser()
+        cParser.add_section('commons')
+        cParser.set('commons', 'etcd_connection', '10.70.42.142')
+        cParser.set('commons', 'etcd_port', '2379')
+        return AlertingEtcdPersister(cParser).get_store()
+
     def test_config_help(self, monkeypatch):
         expected_config_help = {
             'email_id': {
@@ -54,26 +61,13 @@ class Test_mail_handler(object):
             }
         }
 
-        def mock_config(package, parameter):
-            if parameter == "etcd_port":
-                return '2379'
-            if parameter == 'etcd_connection':
-                return '0.0.0.0'
-        monkeypatch.setattr(config, 'get', mock_config)
-        handler = EmailHandler()
+        handler = EmailHandler(self.get_etcd_server())
         assert isinstance(handler.etcd_server, etcd_server)
         assert handler.get_config_help() == expected_config_help
         assert isinstance(handler.complete, multiprocessing.synchronize.Event)
 
     def test_mail_handler_constructor(self, monkeypatch):
-        def mock_config_get(package, parameter):
-            if parameter == 'etcd_connection':
-                return '0.0.0.0'
-            elif parameter == 'etcd_port':
-                return '2379'
-
-        monkeypatch.setattr(config, 'get', mock_config_get)
-        handler = EmailHandler()
+        handler = EmailHandler(self.get_etcd_server())
         assert isinstance(handler.etcd_server, etcd_server)
         assert isinstance(handler.complete, multiprocessing.synchronize.Event)
         assert isinstance(handler.admin_config, dict)
@@ -88,14 +82,7 @@ class Test_mail_handler(object):
             'is_admin': True,
         }
 
-        def mock_config_get(package, parameter):
-            if parameter == 'etcd_connection':
-                return '0.0.0.0'
-            elif parameter == 'etcd_port':
-                return '2379'
-
-        monkeypatch.setattr(config, 'get', mock_config_get)
-        mail_handler = EmailHandler()
+        mail_handler = EmailHandler(self.get_etcd_server())
         assert mail_handler.validate_config(mail_config)
 
     def test_mail_handler_validate_admin_config_without_auth_failure_condition(
@@ -106,14 +93,7 @@ class Test_mail_handler(object):
             'email_smtp_port': '465',
         }
 
-        def mock_config_get(package, parameter):
-            if parameter == 'etcd_connection':
-                return '0.0.0.0'
-            elif parameter == 'etcd_port':
-                return '2379'
-
-        monkeypatch.setattr(config, 'get', mock_config_get)
-        mail_handler = EmailHandler()
+        mail_handler = EmailHandler(self.get_etcd_server())
         pytest.raises(
             InvalidHandlerConfig,
             mail_handler.validate_config,
@@ -130,14 +110,7 @@ class Test_mail_handler(object):
             'email_pass': 'XXXXXXXXXX'
         }
 
-        def mock_config_get(package, parameter):
-            if parameter == 'etcd_connection':
-                return '0.0.0.0'
-            elif parameter == 'etcd_port':
-                return '2379'
-
-        monkeypatch.setattr(config, 'get', mock_config_get)
-        mail_handler = EmailHandler()
+        mail_handler = EmailHandler(self.get_etcd_server())
         assert mail_handler.validate_config(mail_config)
 
     def test_mail_handler_validate_admin_with_auth_failure_condition(
@@ -150,16 +123,10 @@ class Test_mail_handler(object):
             'auth': 'ssl'
         }
 
-        def mock_config_get(package, parameter):
-            if parameter == 'etcd_connection':
-                return '0.0.0.0'
-            elif parameter == 'etcd_port':
-                return '2379'
-
-        monkeypatch.setattr(config, 'get', mock_config_get)
-        mail_handler = EmailHandler()
+        mail_handler = EmailHandler(self.get_etcd_server())
         pytest.raises(
             InvalidHandlerConfig,
             mail_handler.validate_config,
             mail_config
         )
+
