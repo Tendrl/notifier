@@ -10,6 +10,7 @@ from tendrl.alerting.exceptions import AlertingError
 from tendrl.alerting.exceptions import InvalidRequest
 from tendrl.alerting.notification.exceptions import InvalidHandlerConfig
 from tendrl.alerting.notification.exceptions import NotificationPluginError
+import yaml
 
 
 LOG = logging.getLogger(__name__)
@@ -51,11 +52,11 @@ def get_alerts(filter_criteria=None):
     try:
         if len(request.args) > 0:
             return Response(
-                str(persister.get_alerts(request.args.items())),
+                yaml.safe_dump(persister.get_alerts(request.args.items())),
                 mimetype='application/json'
             )
         return Response(
-            str(persister.get_alerts()),
+            yaml.safe_dump(persister.get_alerts()),
             mimetype='application/json'
         )
     except EtcdError as ex:
@@ -80,7 +81,7 @@ def add_destination(name):
 def get_alert_types():
     try:
         return Response(
-            str(persister.get_alert_types()),
+            yaml.safe_dump(persister.get_alert_types()),
             mimetype='application/json'
         )
     except EtcdError as ex:
