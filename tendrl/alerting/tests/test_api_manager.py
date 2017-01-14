@@ -1,27 +1,33 @@
+from ConfigParser import SafeConfigParser
 from mock import MagicMock
 import multiprocessing
 import sys
-sys.modules['tendrl.common.config'] = MagicMock()
 sys.modules['tendrl.common.log'] = MagicMock()
 from tendrl.alerting.api.manager import APIManager
-from tendrl.alerting.api.manager import config
-del sys.modules['tendrl.common.config']
+from tendrl.alerting.notification.manager import NotificationPluginManager
+from tendrl.alerting.persistence.persister import AlertingEtcdPersister
 del sys.modules['tendrl.common.log']
 
 
 class TestAPIManager(object):
+    def get_persister(self):
+        cParser = SafeConfigParser()
+        cParser.add_section('commons')
+        cParser.set('commons', 'etcd_connection', '10.70.42.142')
+        cParser.set('commons', 'etcd_port', '2379')
+        return AlertingEtcdPersister(cParser)
+
+    def get_notification_manager(self):
+        return NotificationPluginManager(self.get_persister().get_store())
+
     def test_manager_constructor(self, monkeypatch):
-        def mock_config(package, parameter):
-            if parameter == "server_interface":
-                return '0.0.0.0'
-        monkeypatch.setattr(config, 'get', mock_config)
-        manager = APIManager()
+        manager = APIManager('0.0.0.0', '5001', self.get_notification_manager(), self.get_persister())
         assert manager.host == '0.0.0.0'
         assert isinstance(manager, APIManager)
         assert isinstance(manager._complete, multiprocessing.synchronize.Event)
 
     def test_manager_start(self, monkeypatch):
-        manager = APIManager()
+        manager = APIManager('0.0.0.0', '5001', self.get_notification_manager(), self.get_persister())
 
         def mock_start():
             return
