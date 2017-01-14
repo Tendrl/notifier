@@ -18,6 +18,7 @@ LOG = logging.getLogger(__name__)
 
 etcd_server = None
 
+
 class PluginMount(type):
 
     def __init__(cls, name, bases, attrs):
@@ -104,7 +105,7 @@ class NotificationPluginManager(object):
     def __init__(self, etcdServer):
         try:
             global etcd_server
-            etcd_server= etcdServer
+            etcd_server = etcdServer
             self.load_plugins()
             notification_medium = []
             for plugin in NotificationPlugin.plugins:

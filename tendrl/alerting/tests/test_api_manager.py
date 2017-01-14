@@ -13,7 +13,7 @@ class TestAPIManager(object):
     def get_persister(self):
         cParser = SafeConfigParser()
         cParser.add_section('commons')
-        cParser.set('commons', 'etcd_connection', '10.70.42.142')
+        cParser.set('commons', 'etcd_connection', '0.0.0.0')
         cParser.set('commons', 'etcd_port', '2379')
         return AlertingEtcdPersister(cParser)
 
