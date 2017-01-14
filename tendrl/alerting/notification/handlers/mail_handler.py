@@ -138,10 +138,7 @@ class EmailHandler(NotificationPlugin):
             self.admin_config = admin_config
             self.user_configs = user_configs
         except EtcdKeyNotFound as ex:
-            LOG.error(
-                'Could not fetch mail configuration.Error %s'
-                % str(ex)
-            )
+            raise NotificationDispatchError(str(ex))
         except (
             EtcdConnectionFailed,
             EtcdNotDir,
@@ -149,10 +146,6 @@ class EmailHandler(NotificationPlugin):
             KeyError,
             SyntaxError
         ) as ex:
-            LOG.error(
-                'Could not fetch mail configuration.Error %s'
-                % str(ex)
-            )
             raise NotificationDispatchError(str(ex))
 
     def format_message(self, alert):
@@ -225,6 +218,11 @@ class EmailHandler(NotificationPlugin):
     def dispatch_notification(self, alert):
         try:
             self.set_destinations()
+        except NotificationDispatchError as ex:
+            LOG.error('Exception caught attempting to email %s.\
+                Error %s' % (str(alert), str(ex)), exc_info=True)
+            return
+        try:
             msg = self.format_message(alert)
             server = self.get_mail_client()
             server.ehlo()
