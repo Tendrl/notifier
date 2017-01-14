@@ -27,7 +27,7 @@ class AlertingEtcdPersister(EtcdPersister):
         }
         self._store.client.write(
             '/_tendrl/config/alerting',
-            confs
+            yaml.safe_dump(confs)
         )
 
     def get_alerts(self, filters=None):
