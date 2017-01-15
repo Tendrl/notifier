@@ -14,7 +14,7 @@ setup(
     zip_safe=False,
     entry_points={
         'console_scripts': ['tendrl-alerting = '
-                            'tendrl.alerting.manager.manager'
+                            'tendrl.alerting.manager'
                             ':main'
                             ]
     }

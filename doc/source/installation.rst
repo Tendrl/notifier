@@ -60,6 +60,13 @@ enviroment which we have created during installation of *integration common*.
 
     ``log_cfg_path = /etc/tendrl/alerting_logging.yaml``
 
+    Set the value of ``api_server_addr`` under section ``alerting``
+
+    ``api_server_addr = 0.0.0.0``
+
+    Set the value of ``api_server_port`` under section ``alerting``
+
+    ``api_server_port = 5001``
 
 6. Create log dir::
 

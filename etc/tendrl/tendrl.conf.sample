@@ -13,11 +13,7 @@ log_level = DEBUG
 
 [alerting]
 # Path to log file
-log_cfg_path = /etc/tendrl/logging.yaml
+log_cfg_path = /etc/tendrl/alerting_logging.yaml
 log_level = DEBUG
-crush_host_type = host
-crush_osd_type = osd
-favorite_timeout_factor = 3
-server_timeout_factor = 3
-cluster_contact_threshold = 60
-cluster_map_retention = 3600
+api_server_addr = 0.0.0.0
+api_server_port = 5001
