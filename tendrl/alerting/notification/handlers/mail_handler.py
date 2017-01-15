@@ -270,4 +270,3 @@ class EmailHandler(NotificationPlugin):
                 Error %s' % (msg, ex), exc_info=True)
         finally:
             server.close()
-

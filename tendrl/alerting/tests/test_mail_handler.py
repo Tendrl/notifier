@@ -129,4 +129,3 @@ class Test_mail_handler(object):
             mail_handler.validate_config,
             mail_config
         )
-
