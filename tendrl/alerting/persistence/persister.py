@@ -1,7 +1,6 @@
 import ast
 import etcd
 import logging
-from tendrl.alerting.exceptions import AlertingError
 from tendrl.alerting.manager.tendrl_definitions_alerting \
     import data as def_data
 from tendrl.alerting.persistence.exceptions import EtcdError
