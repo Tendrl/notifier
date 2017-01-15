@@ -35,4 +35,3 @@ class AlertsWatchManager(multiprocessing.Process):
                 exc_info=True
             )
             raise ex
-
