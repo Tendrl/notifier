@@ -1,7 +1,6 @@
 from flask import Flask
 from flask import request
 from flask import Response
-from flask.ext.api import status
 import logging
 from multiprocessing import Event
 from multiprocessing import Process
@@ -17,7 +16,7 @@ LOG = logging.getLogger(__name__)
 app = Flask(__name__)
 plugin_manager = None
 persister = None
-
+HTTP_500_INTERNAL_SERVER_ERROR = 500
 
 @app.route("/alerting/notification_medium/supported")
 def get_handlers():
@@ -30,7 +29,7 @@ def get_handlers():
         AlertingError,
         NotificationPluginError
     ) as ex:
-        return str(ex), status.HTTP_500_INTERNAL_SERVER_ERROR
+        return str(ex), HTTP_500_INTERNAL_SERVER_ERROR
 
 
 @app.route("/alerting/notification_medium/<name>/help")
@@ -44,7 +43,7 @@ def get_config_help(name):
         InvalidRequest,
         NotificationPluginError
     ) as ex:
-        return str(ex), status.HTTP_500_INTERNAL_SERVER_ERROR
+        return str(ex), HTTP_500_INTERNAL_SERVER_ERROR
 
 
 @app.route("/alerting/alerts")
@@ -60,7 +59,7 @@ def get_alerts(filter_criteria=None):
             mimetype='application/json'
         )
     except EtcdError as ex:
-        return str(ex), status.HTTP_500_INTERNAL_SERVER_ERROR
+        return str(ex), HTTP_500_INTERNAL_SERVER_ERROR
 
 
 @app.route("/alerting/notification_medium/<name>/config", methods=['POST'])
@@ -74,7 +73,7 @@ def add_destination(name):
         InvalidHandlerConfig,
         NotificationPluginError
     ) as ex:
-        return str(ex), status.HTTP_500_INTERNAL_SERVER_ERROR
+        return str(ex), HTTP_500_INTERNAL_SERVER_ERROR
 
 
 @app.route("/alerting/alert_types")
@@ -85,7 +84,7 @@ def get_alert_types():
             mimetype='application/json'
         )
     except EtcdError as ex:
-        return str(ex), status.HTTP_500_INTERNAL_SERVER_ERROR
+        return str(ex), HTTP_500_INTERNAL_SERVER_ERROR
 
 
 class APIManager(Process):

@@ -9,4 +9,3 @@ greenlet>=0.3.2
 msgpack-python
 pytz
 flask
-Flask-API
