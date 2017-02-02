@@ -1,0 +1,4 @@
+---
+email_id: user1@domain.com
+email_smtp_server: smtp.abc.xyz.com
+email_smtp_port: 25

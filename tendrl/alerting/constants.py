@@ -1,0 +1,2 @@
+SIGNIFICANCE_HIGH = 'HIGH'
+TENDRL = 'Tendrl'

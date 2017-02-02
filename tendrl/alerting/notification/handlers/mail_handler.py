@@ -1,23 +1,23 @@
-import ast
 from etcd import EtcdConnectionFailed
 from etcd import EtcdKeyNotFound
 from etcd import EtcdNotDir
-import logging
-import multiprocessing
 import smtplib
 from socket import error
-from tendrl.alerting.notification.exceptions import InvalidHandlerConfig
+from tendrl.alerting.handlers import AlertHandler
 from tendrl.alerting.notification.exceptions import NotificationDispatchError
-from tendrl.alerting.notification.manager import NotificationPlugin
+from tendrl.alerting.notification import NotificationPlugin
+from tendrl.commons.config import load_config
+from tendrl.commons.event import Event
+from tendrl.commons.message import Message
 
-LOG = logging.getLogger(__name__)
+
 SSL_AUTHENTICATION = 'ssl'
 TLS_AUTHENTICATION = 'tls'
 
 
 class EmailHandler(NotificationPlugin):
     def get_config_help(self):
-        return {
+        config_help = {
             'email_id': {
                 'detail': 'The email-id',
                 'type': 'String'
@@ -55,89 +55,36 @@ class EmailHandler(NotificationPlugin):
                 'type': "String(for '*') or List of cluster-ids"
             }
         }
-
-    def validate_config(self, config):
-        if config.get('email_id') is None:
-            raise InvalidHandlerConfig('Email-id is a mandatory field')
-        if config.get('is_admin') is None:
-            raise InvalidHandlerConfig('is_admin is a mandatory field')
-        if config.get('auth') is not None:
-            if (
-                config['auth'] != SSL_AUTHENTICATION and
-                config['auth'] != TLS_AUTHENTICATION
-            ):
-                raise InvalidHandlerConfig(
-                    "The permitted values for 'auth' are 'ssl' or 'tls' or ''"
-                )
-        if config.get('auth') is None:
-            config['auth'] = ""
-        if not config['is_admin']:
-            if config.get('alert_subscriptions') is None:
-                raise InvalidHandlerConfig(
-                    'alert_subscriptions is a mandatory field it could be * to'
-                    'receive all alerts'
-                )
-            if config.get('clusters') is None:
-                raise InvalidHandlerConfig(
-                    "'clusters' is manddatory attribute for non admin users"
-                    "The possible values could be '*' or list of cluster ids"
-                )
-        else:
-            if config.get('email_smtp_server') is None:
-                raise InvalidHandlerConfig(
-                    'email_smtp_server is a mandatory field'
-                )
-            if config['auth'] is '':
-                return True
-            else:
-                if 'email_pass' not in config:
-                    raise InvalidHandlerConfig(
-                        'email_pass is a mandatory field if auth is chosen'
-                    )
-        return True
-
-    def add_destination(self, conf):
-        config = ast.literal_eval(conf)
-        try:
-            if self.validate_config(config):
-                self.etcd_server.client.write(
-                    '/alerting/notification_medium/email/config/%s' % config[
-                        'email_id'],
-                    config
-                )
-        except (
-            NotificationDispatchError,
-            InvalidHandlerConfig,
-            EtcdConnectionFailed,
-            EtcdNotDir,
-            KeyError,
-            SyntaxError,
-            ValueError
-        ) as ex:
-            LOG.error(
-                'Failed to add email config %s. Error %s' % (conf, str(ex))
-            )
-            raise NotificationDispatchError(str(ex))
+        return config_help
 
     def set_destinations(self):
-        admin_config = {}
+        # TODO(anmolbabu):User configuration will not just be destination email
+        # but it would also include user level subscriptions the capability
+        # underneath needs to be enhanced for that.
         user_configs = []
         try:
-            configs = self.etcd_server.client.read(
-                '/alerting/notification_medium/email/config',
-                recursive=True
-            )
-            for config in configs._children:
-                mail_config = ast.literal_eval(config['value'])
-                if mail_config['is_admin']:
-                    if mail_config.get('auth') is None:
-                        mail_config['auth'] = ""
-                    admin_config = mail_config
-                else:
-                    user_configs.append(mail_config)
-            self.admin_config = admin_config
+            users = tendrl_ns.etcd_orm.client.read('/_tendrl/users')
+            for user in users._children:
+                user_key = user['key']
+                try:
+                    user_email = tendrl_ns.etcd_orm.client.read(
+                        "%s/email" % user_key
+                    ).value
+                    user_configs.append(user_email)
+                except EtcdKeyNotFound:
+                    continue
             self.user_configs = user_configs
         except EtcdKeyNotFound as ex:
+            Event(
+                Message(
+                    "error",
+                    "alerting",
+                    {
+                        "message": 'Exception trying to set alert'
+                        ' destinations %s' % str(ex),
+                    }
+                )
+            )
             raise NotificationDispatchError(str(ex))
         except (
             EtcdConnectionFailed,
@@ -150,25 +97,46 @@ class EmailHandler(NotificationPlugin):
 
     def format_message(self, alert):
         return "Subject: [Alert] %s, %s threshold breached\n\n%s" % (
-            alert.resource, alert.severity, alert.to_json_string())
+            alert.resource, alert.severity, alert.tags['message'])
 
     def get_alert_destinations(self, alert):
-        recipients = []
-        for config in self.user_configs:
-            # TODO(anmol) Ideally even check the cluster part.
-            if config['alert_subscriptions'] == '*' or\
-                    alert.resource in config['alert_subscriptions']:
-                recipients.append(config['email_id'])
-        return recipients
+        for alert_handler in AlertHandler.handlers:
+            if alert.resource == alert_handler.handles:
+                #ideally iterate per user and formulate
+                #the list of eligible users
+                if tendrl_ns.notification_subscriptions['%s_%s' % (
+                    self.name,
+                    alert_handler.representive_name
+                )] == "true":
+                    # Ideally it should be list of applicable users
+                    # but untill we enhance global config to user config_help
+                    # the behaviour is if notification enabled globally its
+                    # enabled for all users
+                    return self.user_configs
+                else:
+                    return None
+        return None
 
-    def __init__(self, etcd_server):
+    def __init__(self):
         self.name = 'email'
         try:
-            self.etcd_server = etcd_server
-            self.admin_config = {}
+            self.admin_config = load_config(
+                'alerting',
+                '/etc/tendrl/alerting/email.conf.yaml'
+            )
+            if not self.admin_config.get('auth'):
+                self.admin_config['auth'] = ''
             self.user_configs = []
-            self.complete = multiprocessing.Event()
         except NotificationDispatchError as ex:
+            Event(
+                Message(
+                    "error",
+                    "alerting",
+                    {
+                        "message": 'Exception %s' % str(ex),
+                    }
+                )
+            )
             raise NotificationDispatchError(str(ex))
 
     def get_mail_client(self):
@@ -184,54 +152,81 @@ class EmailHandler(NotificationPlugin):
             try:
                 server = smtplib.SMTP_SSL(
                     self.admin_config['email_smtp_server'],
-                    self.admin_config['email_smtp_port']
+                    int(self.admin_config['email_smtp_port'])
                 )
                 return server
             except (smtplib.socket.gaierror, smtplib.SMTPException) as ex:
-                LOG.error('Failed to fetch client for smtp server %s and smtp\
-                    port %s. Error %s' % (
-                    self.admin_config['email_smtp_server'],
-                    str(self.admin_config['email_smtp_port']),
-                    ex
-                ),
-                    exc_info=True)
+                Event(
+                    Message(
+                        "error",
+                        "alerting",
+                        {
+                            "message": 'Failed to fetch client for smtp'
+                            '  server %s and smtp port %s. Error %s' % (
+                                self.admin_config['email_smtp_server'],
+                                str(self.admin_config['email_smtp_port']),
+                                ex
+                            )
+                        }
+                    )
+                )
                 raise NotificationDispatchError(str(ex))
         else:
             try:
                 server = smtplib.SMTP(
                     self.admin_config['email_smtp_server'],
-                    self.admin_config['email_smtp_port']
+                    int(self.admin_config['email_smtp_port'])
                 )
                 if self.admin_config['auth'] != '':
                     server.starttls()
                 return server
             except (smtplib.socket.gaierror, smtplib.SMTPException) as ex:
-                LOG.error('Failed to fetch client for smtp server %s and smtp\
-                    port %s. Error %s' % (
-                    self.admin_config['email_smtp_server'],
-                    str(self.admin_config['email_smtp_port']),
-                    ex
-                ),
-                    exc_info=True)
+                Event(
+                    Message(
+                        "error",
+                        "alerting",
+                        {
+                            "message": 'Failed to fetch client for smtp'
+                            '  server %s and smtp port %s. Error %s' % (
+                                self.admin_config['email_smtp_server'],
+                                str(self.admin_config['email_smtp_port']),
+                                ex
+                            )
+                        }
+                    )
+                )
                 raise NotificationDispatchError(str(ex))
 
     def dispatch_notification(self, alert):
         try:
             self.set_destinations()
         except NotificationDispatchError as ex:
-            LOG.error('Exception caught attempting to email %s.\
-                Error %s' % (str(alert), str(ex)), exc_info=True)
+            Event(
+                Message(
+                    "error",
+                    "alerting",
+                    {
+                        "message": 'Exception caught attempting to email'
+                        ' %s. Error %s' % (str(alert.tags), str(ex))
+                    }
+                )
+            )
             return
         try:
             msg = self.format_message(alert)
             server = self.get_mail_client()
             server.ehlo()
             if not self.admin_config:
-                LOG.error(
-                    'Detected alert %s.'
-                    'But, admin config is a must to send notification'
-                    % msg,
-                    exc_info=True
+                Event(
+                    Message(
+                        "error",
+                        "alerting",
+                        {
+                            "message": 'Detected alert %s.'
+                            'But, admin config is a must to send'
+                            ' notification' % msg
+                        }
+                    )
                 )
                 return
             if self.admin_config['auth'] != "":
@@ -240,22 +235,35 @@ class EmailHandler(NotificationPlugin):
                     self.admin_config['email_pass']
                 )
             alert_destinations = self.get_alert_destinations(alert)
-            if len(alert_destinations) == 0:
-                LOG.error(
-                    'No destinations configured to send %s alert notification'
-                    % msg,
-                    exc_info=True
+            if (
+                not alert_destinations or
+                len(alert_destinations) == 0
+            ):
+                Event(
+                    Message(
+                        "error",
+                        "alerting",
+                        {
+                            "message": 'No destinations configured to send'
+                            ' %s alert notification' % msg
+                        }
+                    )
                 )
                 return
             server.sendmail(
                 self.admin_config['email_id'],
-                alert_destinations,
+                self.user_configs,
                 msg
             )
-            LOG.debug(
-                'Sent mail to %s to alert about %s'
-                % (alert_destinations, msg),
-                exc_info=True
+            Event(
+                Message(
+                    "debug",
+                    "alerting",
+                    {
+                        "message": 'Sent mail to %s to alert about %s'
+                        % (self.user_configs, msg)
+                    }
+                )
             )
         except (
             NotificationDispatchError,
@@ -266,7 +274,16 @@ class EmailHandler(NotificationPlugin):
             smtplib.SMTPSenderRefused,
             Exception
         ) as ex:
-            LOG.error('Exception caught attempting to email %s.\
-                Error %s' % (msg, ex), exc_info=True)
+            Event(
+                Message(
+                    "error",
+                    "alerting",
+                    {
+                        "message": 'Exception caught attempting to email'
+                        '%s. Error %s' % (msg, ex)
+                    }
+                )
+            )
         finally:
             server.close()
+
