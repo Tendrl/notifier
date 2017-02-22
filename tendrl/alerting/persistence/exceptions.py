@@ -1,0 +1,2 @@
+class EtcdError(Exception):
+    pass
