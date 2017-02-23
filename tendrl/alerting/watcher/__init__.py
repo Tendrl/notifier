@@ -1,7 +1,7 @@
 import multiprocessing
 from tendrl.commons.etcdobj import Server as etcd_server
 from tendrl.commons.event import Event
-from tendrl.commons.message import Message
+from tendrl.commons.message import ExceptionMessage
 
 
 class AlertsWatchManager(multiprocessing.Process):
@@ -40,12 +40,12 @@ class AlertsWatchManager(multiprocessing.Process):
                         tendrl_ns.alert_queue.put(message_id)
         except Exception as ex:
             Event(
-                Message(
-                    "error",
-                    "alerting",
-                    {
-                        "message": 'Exception in alert watcher.Error %s'
-                        % str(ex)
+                ExceptionMessage(
+                    priority="error",
+                    publisher="alerting",
+                    payload={
+                        "message": 'Exception in alert watcher',
+                        "exception": ex
                     }
                 )
             )

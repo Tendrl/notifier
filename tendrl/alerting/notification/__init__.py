@@ -5,14 +5,11 @@ import inspect
 import os
 import six
 from tendrl.alerting.exceptions import AlertingError
-from tendrl.alerting.notification.exceptions import NotificationDispatchError
 from tendrl.alerting.notification.exceptions import NotificationPluginError
-from tendrl.alerting.objects.alert_types import AlertTypes
-from tendrl.alerting.handlers import AlertHandler
 from tendrl.alerting.objects.notification_media import NotificationMedia
 from tendrl.alerting.objects.notification_config import NotificationConfig
 from tendrl.commons.event import Event
-from tendrl.commons.message import Message
+from tendrl.commons.message import ExceptionMessage
 
 
 class PluginMount(type):
@@ -69,12 +66,13 @@ class NotificationPluginManager(object):
                     exec("from %s import %s" % (plugin_name, name))
         except (SyntaxError, ValueError, ImportError) as ex:
             Event(
-                Message(
-                    "error",
-                    "alerting",
-                    {
+                ExceptionMessage(
+                    priority="error",
+                    publisher="alerting",
+                    payload={
                         "message": 'Failed to load the time series db'
-                        'plugins. Error %s' % ex
+                        'plugins.',
+                        "exception": ex
                     }
                 )
             )
@@ -110,12 +108,13 @@ class NotificationPluginManager(object):
             NotificationPluginError
         ) as ex:
             Event(
-                Message(
-                    "error",
-                    "alerting",
-                    {
+                ExceptionMessage(
+                    priority="error",
+                    publisher="alerting",
+                    payload={
                         "message": 'Failed to intialize notification '
-                        'manager.Error %s' % str(ex)
+                        'manager',
+                        "exception": ex
                     }
                 )
             )

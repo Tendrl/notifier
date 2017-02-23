@@ -8,6 +8,7 @@ from tendrl.alerting.notification.exceptions import NotificationDispatchError
 from tendrl.alerting.notification import NotificationPlugin
 from tendrl.commons.config import load_config
 from tendrl.commons.event import Event
+from tendrl.commons.message import ExceptionMessage
 from tendrl.commons.message import Message
 
 
@@ -76,12 +77,13 @@ class EmailHandler(NotificationPlugin):
             self.user_configs = user_configs
         except EtcdKeyNotFound as ex:
             Event(
-                Message(
-                    "error",
-                    "alerting",
-                    {
+                ExceptionMessage(
+                    priority="error",
+                    publisher="alerting",
+                    payload={
                         "message": 'Exception trying to set alert'
-                        ' destinations %s' % str(ex),
+                        'destinations',
+                        "exception": ex
                     }
                 )
             )
@@ -129,10 +131,10 @@ class EmailHandler(NotificationPlugin):
             self.user_configs = []
         except NotificationDispatchError as ex:
             Event(
-                Message(
-                    "error",
-                    "alerting",
-                    {
+                ExceptionMessage(
+                    priority="error",
+                    publisher="alerting",
+                    payload={
                         "message": 'Exception %s' % str(ex),
                     }
                 )
@@ -157,16 +159,16 @@ class EmailHandler(NotificationPlugin):
                 return server
             except (smtplib.socket.gaierror, smtplib.SMTPException) as ex:
                 Event(
-                    Message(
-                        "error",
-                        "alerting",
-                        {
+                    ExceptionMessage(
+                        priority="error",
+                        publisher="alerting",
+                        payload={
                             "message": 'Failed to fetch client for smtp'
-                            '  server %s and smtp port %s. Error %s' % (
+                            '  server %s and smtp port %s' % (
                                 self.admin_config['email_smtp_server'],
                                 str(self.admin_config['email_smtp_port']),
-                                ex
-                            )
+                            ),
+                            "exception": ex
                         }
                     )
                 )
@@ -182,16 +184,16 @@ class EmailHandler(NotificationPlugin):
                 return server
             except (smtplib.socket.gaierror, smtplib.SMTPException) as ex:
                 Event(
-                    Message(
-                        "error",
-                        "alerting",
-                        {
+                    ExceptionMessage(
+                        priority="error",
+                        publisher="alerting",
+                        payload={
                             "message": 'Failed to fetch client for smtp'
-                            '  server %s and smtp port %s. Error %s' % (
+                            '  server %s and smtp port %s' % (
                                 self.admin_config['email_smtp_server'],
                                 str(self.admin_config['email_smtp_port']),
-                                ex
-                            )
+                            ),
+                            "exception": ex
                         }
                     )
                 )
@@ -202,12 +204,13 @@ class EmailHandler(NotificationPlugin):
             self.set_destinations()
         except NotificationDispatchError as ex:
             Event(
-                Message(
-                    "error",
-                    "alerting",
-                    {
-                        "message": 'Exception caught attempting to email'
-                        ' %s. Error %s' % (str(alert.tags), str(ex))
+                ExceptionMessage(
+                    priority="error",
+                    publisher="alerting",
+                    payload={
+                        "message": 'Exception caught attempting to set'
+                        ' %s email destinations' % str(alert.tags),
+                        "exception": ex
                     }
                 )
             )
@@ -275,15 +278,15 @@ class EmailHandler(NotificationPlugin):
             Exception
         ) as ex:
             Event(
-                Message(
-                    "error",
-                    "alerting",
-                    {
+                ExceptionMessage(
+                    priority="error",
+                    publisher="alerting",
+                    payload={
                         "message": 'Exception caught attempting to email'
-                        '%s. Error %s' % (msg, ex)
+                        '%s' % msg,
+                        "exception": ex
                     }
                 )
             )
         finally:
             server.close()
-

@@ -8,6 +8,7 @@ from tendrl.alerting.notification import NotificationPluginManager
 from tendrl.alerting.watcher import AlertsWatchManager
 from tendrl.alerting.handlers import AlertHandlerManager
 from tendrl.commons.event import Event
+from tendrl.commons.message import ExceptionMessage
 from tendrl.commons.message import Message
 
 
@@ -22,11 +23,12 @@ class TendrlAlertingManager(object):
             self.watch_manager = AlertsWatchManager()
         except (AlertingError) as ex:
             Event(
-                Message(
-                    "error",
-                    "alerting",
-                    {
-                        "message": 'Exception %s' % str(ex),
+                ExceptionMessage(
+                    priority="error",
+                    publisher="alerting",
+                    payload={
+                        "message": 'Error intializing alerting manager',
+                        "exception": ex
                     }
                 )
             )
@@ -42,11 +44,12 @@ class TendrlAlertingManager(object):
             Exception
         ) as ex:
             Event(
-                Message(
-                    "error",
-                    "alerting",
-                    {
-                        "message": 'Exception %s' % str(ex),
+                ExceptionMessage(
+                    priority="error",
+                    publisher="alerting",
+                    payload={
+                        "message": 'Error starting alerting manager',
+                        "exception": ex
                     }
                 )
             )
@@ -59,11 +62,12 @@ class TendrlAlertingManager(object):
             os.system("ps -C tendrl-alerting -o pid=|xargs kill -9")
         except Exception as ex:
             Event(
-                Message(
-                    "error",
-                    "alerting",
-                    {
-                        "message": 'Exception %s' % str(ex),
+                ExceptionMessage(
+                    priority="error",
+                    publisher="alerting",
+                    payload={
+                        "message": 'Exception stopping alerting',
+                        "exception": ex
                     }
                 )
             )

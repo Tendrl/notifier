@@ -8,6 +8,7 @@ import six
 from tendrl.alerting import constants
 from tendrl.alerting.objects.alert import AlertUtils
 from tendrl.commons.event import Event
+from tendrl.commons.message import ExceptionMessage
 from tendrl.commons.message import Message
 from tendrl.commons.utils.time_utils import now
 import time
@@ -65,22 +66,23 @@ class AlertHandler(object):
                 self.alert.save()
             except Exception as ex:
                 Event(
-                    Message(
-                        "error",
-                        "alerting",
-                        {
-                            "message": "Exception %s in handler" % str(ex)
+                    ExceptionMessage(
+                        priority="error",
+                        publisher="alerting",
+                        payload={
+                            "message": "Exception %s in handler",
+                            "exception": ex
                         }
                     )
                 )
         except (etcd.EtcdConnectionFailed, Exception) as ex:
             Event(
-                Message(
-                    "error",
-                    "alerting",
-                    {
-                        "message": 'Failed to fetch existing alerts.'
-                                   'Error %s' % ex
+                ExceptionMessage(
+                    priority="error",
+                    publisher="alerting",
+                    payload={
+                        "message": 'Failed to fetch existing alerts.',
+                        "exception": ex
                     }
                 )
             )
@@ -93,16 +95,16 @@ class AlertHandler(object):
             tendrl_ns.notification_plugin_manager.notify_alert(self.alert)
         except Exception as ex:
             Event(
-                Message(
-                    "error",
-                    "alerting",
-                    {
+                ExceptionMessage(
+                    priority="error",
+                    publisher="alerting",
+                    payload={
                         "message": 'Failed to handle the alert of resource %s'
-                        ' for node %s. Error %s' % (
+                        ' for node %s' % (
                             alert_obj.resource,
                             alert_obj.node_id,
-                            str(ex)
-                        )
+                        ),
+                        "exception": ex
                     }
                 )
             )
@@ -132,14 +134,12 @@ class AlertHandlerManager(multiprocessing.Process):
                                 self.alert_handlers.append(cls.handles)
         except (SyntaxError, ValueError, ImportError) as ex:
             Event(
-                Message(
-                    "error",
-                    "alerting",
-                    {
-                        "message": 'Failed to load the alert handlers.'
-                        'Error %s' % (
-                            str(ex)
-                        )
+                ExceptionMessage(
+                    priority="error",
+                    publisher="alerting",
+                    payload={
+                        "message": 'Failed to load the alert handlers.',
+                        "exception": ex
                     }
                 )
             )
@@ -154,13 +154,12 @@ class AlertHandlerManager(multiprocessing.Process):
             self.init_alerttypes()
         except (SyntaxError, ValueError, ImportError) as ex:
             Event(
-                Message(
-                    "error",
-                    "alerting",
-                    {
-                        "message": 'Error %s' % (
-                            str(ex)
-                        )
+                ExceptionMessage(
+                    priority="error",
+                    publisher="alerting",
+                    payload={
+                        "message": 'Alert handler init failed',
+                        "exception": ex
                     }
                 )
             )
@@ -211,11 +210,12 @@ class AlertHandlerManager(multiprocessing.Process):
                         )
         except Exception as ex:
             Event(
-                Message(
-                    "error",
-                    "alerting",
-                    {
-                        "message": "Exception caught. Error %s" % str(ex)
+                ExceptionMessage(
+                    priority="error",
+                    publisher="alerting",
+                    payload={
+                        "message": "Exception caught starting alert handlers.",
+                        "exception": ex
                     }
                 )
             )

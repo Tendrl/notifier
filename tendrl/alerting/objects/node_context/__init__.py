@@ -33,17 +33,6 @@ class NodeContext(objects.AlertingBaseObject):
         local_node_context = "/etc/tendrl/node-agent/NodeContext"
         with open(local_node_context, 'wb+') as f:
             f.write(node_id)
-        Event(
-            Message(
-                "info",
-                "alerting",
-                {
-                    "message": "SET_LOCAL: "
-                    "tendrl_ns.alerting.objects.NodeContext.node_id"
-                    "==%s" % node_id
-                }
-            )
-        )
         return node_id
 
     def _get_node_id(self):
