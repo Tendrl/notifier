@@ -4,6 +4,7 @@ import inspect
 import json
 import multiprocessing
 import os
+from tendrl.alerting.utils import list_modules_in_package_path
 import six
 from tendrl.alerting import constants
 from tendrl.alerting.objects.alert import AlertUtils
@@ -112,38 +113,15 @@ class AlertHandler(object):
 
 class AlertHandlerManager(multiprocessing.Process):
     def load_handlers(self):
-        try:
-            path = os.path.dirname(os.path.abspath(__file__))
-            pkg = 'tendrl.alerting.handlers'
-            for file_name in os.listdir(path):
-                component_path = os.path.join(path, file_name)
-                if os.path.isdir(component_path):
-                    for py in [f[:-3] for f in os.listdir(component_path)
-                               if f.endswith('.py') and f != '__init__.py']:
-                        handler_name = '.'.join([pkg, file_name, py])
-                        mod = importlib.import_module(handler_name)
-                        clsmembers = inspect.getmembers(mod, inspect.isclass)
-                        for name, cls in clsmembers:
-                            if cls.handles:
-                                exec(
-                                    "from %s import %s" % (
-                                        handler_name,
-                                        name
-                                    )
-                                )
-                                self.alert_handlers.append(cls.handles)
-        except (SyntaxError, ValueError, ImportError) as ex:
-            Event(
-                ExceptionMessage(
-                    priority="error",
-                    publisher="alerting",
-                    payload={
-                        "message": 'Failed to load the alert handlers.',
-                        "exception": ex
-                    }
-                )
-            )
-            raise ex
+        path = os.path.dirname(os.path.abspath(__file__))
+        pkg = 'tendrl.alerting.handlers'
+        handlers = list_modules_in_package_path(path, pkg)
+        for name, handler_fqdn in handlers:
+            mod = importlib.import_module(handler_fqdn)
+            clsmembers = inspect.getmembers(mod, inspect.isclass)
+            for name, cls in clsmembers:
+                if cls.handles:
+                    self.alert_handlers.append(cls.handles)
 
     def __init__(self):
         super(AlertHandlerManager, self).__init__()
