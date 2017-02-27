@@ -1,13 +1,13 @@
 from abc import abstractmethod
 import etcd
 import importlib
-import inspect
 import os
 import six
 from tendrl.alerting.exceptions import AlertingError
 from tendrl.alerting.notification.exceptions import NotificationPluginError
 from tendrl.alerting.objects.notification_media import NotificationMedia
 from tendrl.alerting.objects.notification_config import NotificationConfig
+from tendrl.alerting.utils import list_modules_in_package_path
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
 
@@ -57,13 +57,9 @@ class NotificationPluginManager(object):
         try:
             path = os.path.dirname(os.path.abspath(__file__)) + '/handlers'
             pkg = 'tendrl.alerting.notification.handlers'
-            for py in [f[:-3] for f in os.listdir(path)
-                       if f.endswith('.py') and f != '__init__.py']:
-                plugin_name = '.'.join([pkg, py])
-                mod = importlib.import_module(plugin_name)
-                clsmembers = inspect.getmembers(mod, inspect.isclass)
-                for name, cls in clsmembers:
-                    exec("from %s import %s" % (plugin_name, name))
+            notif_handlers = list_modules_in_package_path(path, pkg)
+            for name, handler_fqdn in notif_handlers:
+                importlib.import_module(handler_fqdn)
         except (SyntaxError, ValueError, ImportError) as ex:
             Event(
                 ExceptionMessage(
@@ -126,3 +122,4 @@ class NotificationPluginManager(object):
         if alert is not None:
             for plugin in NotificationPlugin.plugins:
                 plugin.dispatch_notification(alert)
+
