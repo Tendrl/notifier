@@ -12,6 +12,14 @@ setup(
     author_email="rkanade@redhat.com",
     license="LGPL-2.1+",
     zip_safe=False,
+    install_requires=[
+        "PyYAML",
+        "gevent>=1.0",
+        "namespaces",
+        "python-etcd",
+        "six",
+        "tendrl-commons",
+        ],
     entry_points={
         'console_scripts': ['tendrl-alerting = '
                             'tendrl.alerting.manager'
