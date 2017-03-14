@@ -55,6 +55,12 @@ namespace.tendrl.alerting:
         acked:
           help: 'Indication of whether alert is acked or not'
           type: Boolean
+        ack_comment:
+          help: 'Users comments for acking this alert'
+          type: List
+        acked_at:
+          help: 'Time at which the alert was acked'
+          type: String
         pid:
           help: 'The id of process raising the alert'
           type: String
@@ -100,6 +106,12 @@ namespace.tendrl.alerting:
         acked:
           help: 'Indication of whether alert is acked or not'
           type: Boolean
+        ack_comment:
+          help: 'Users comments for acking this alert'
+          type: List
+        acked_at:
+          help: 'Time at which the alert was acked'
+          type: String
         pid:
           help: 'The id of process raising the alert'
           type: String
@@ -145,6 +157,12 @@ namespace.tendrl.alerting:
         acked:
           help: 'Indication of whether alert is acked or not'
           type: Boolean
+        ack_comment:
+          help: 'Users comments for acking this alert'
+          type: List
+        acked_at:
+          help: 'Time at which the alert was acked'
+          type: String
         pid:
           help: 'The id of process raising the alert'
           type: String
