@@ -1,14 +1,13 @@
 from tendrl.commons.etcdobj import EtcdObj
 from tendrl.commons import config as cmn_config
-from tendrl.alerting.objects \
-    import AlertingBaseObject
+from tendrl.commons.objects import BaseObject
 
 
-class Config(AlertingBaseObject):
+class Config(BaseObject):
     def __init__(self, config=None, *args, **kwargs):
         super(Config, self).__init__(*args, **kwargs)
 
-        self.value = '_tendrl/config/alerting/data'
+        self.value = '_NS/alerting/config'
         if config is None:
             config = cmn_config.load_config(
                 'alerting',
@@ -22,5 +21,5 @@ class _ConfigEtcd(EtcdObj):
     """Config etcd object, lazily updated
 
     """
-    __name__ = '_tendrl/config/alerting'
+    __name__ = '_NS/alerting/config'
     _tendrl_cls = Config

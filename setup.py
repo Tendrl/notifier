@@ -17,8 +17,6 @@ def extract_requirements(filename):
             if not x.startswith("#") and x[:-1] != ''
         ]
 
-install_requires = extract_requirements('requirements.txt')
-
 
 def read_module_contents():
     with open('version.py') as app_init:
@@ -118,7 +116,10 @@ setup(
     author_email="rkanade@redhat.com",
     license="LGPL-2.1+",
     zip_safe=False,
-    install_requires=install_requires,
+    install_requires=[
+        "tendrl-commons",
+        ],
+    include_package_data=True,
     entry_points={
         'console_scripts': ['tendrl-alerting = '
                             'tendrl.alerting.manager'

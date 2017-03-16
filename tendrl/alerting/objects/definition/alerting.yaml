@@ -1,14 +1,13 @@
-# flake8: noqa
-data = """---
-namespace.tendrl.alerting:
+---
+namespace.alerting:
   objects:
     Definition:
       enabled: True
       help: "Definition"
-      value: _tendrl/definitions/alerting
-      list: _tendrl/definitions/alerting
+      value: _NS/alerting/definitions
+      list: _NS/alerting/definitions
       attrs:
-        master:
+        data:
           help: Alerting definitions
           type: String
     Config:
@@ -17,8 +16,8 @@ namespace.tendrl.alerting:
           help: Configuration data of alerting for this Tendrl deployment
           type: str
       enabled: true
-      value: _tendrl/config/alerting
-      list: _tendrl/config/alerting
+      value: _NS/alerting/config
+      list: _NS/alerting/config
       help: alerting integration component configuration
     Alert:
       attrs:
@@ -239,4 +238,3 @@ namespace.tendrl.alerting:
       list: notification_settings/
       help: "Notification configuration"
 tendrl_schema_version: 0.3
-"""

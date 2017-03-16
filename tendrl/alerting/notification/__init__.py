@@ -76,8 +76,8 @@ class NotificationPluginManager(object):
 
     def save_alertnotificationconfig(self):
         notification_config = {}
-        for n_plugin in tendrl_ns.notification_medium:
-            for alert_type in tendrl_ns.alert_types:
+        for n_plugin in NS.notification_medium:
+            for alert_type in NS.alert_types:
                 conf_name = '%s_%s' % (n_plugin, alert_type)
                 notification_config[conf_name] = "true"
         NotificationConfig(config=notification_config).save()
@@ -89,7 +89,7 @@ class NotificationPluginManager(object):
             notification_medium = []
             for plugin in NotificationPlugin.plugins:
                 notification_medium.append(plugin.name)
-            tendrl_ns.notification_medium = notification_medium
+            NS.notification_medium = notification_medium
             NotificationMedia(
                 media=notification_medium
             ).save()
@@ -117,9 +117,8 @@ class NotificationPluginManager(object):
             raise AlertingError(str(ex))
 
     def notify_alert(self, alert):
-        tendrl_ns.notification_subscriptions = \
+        NS.notification_subscriptions = \
             NotificationConfig().load().config
         if alert is not None:
             for plugin in NotificationPlugin.plugins:
                 plugin.dispatch_notification(alert)
-

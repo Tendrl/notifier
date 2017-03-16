@@ -1,9 +1,8 @@
-from tendrl.alerting.objects \
-    import AlertingBaseObject
 from tendrl.commons.etcdobj import EtcdObj
+from tendrl.commons.objects import BaseObject
 
 
-class NotificationMedia(AlertingBaseObject):
+class NotificationMedia(BaseObject):
     def __init__(self, media=None, *args, **kwargs):
         super(NotificationMedia, self).__init__(*args, **kwargs)
         self.value = 'alerting/notification_medium/media'

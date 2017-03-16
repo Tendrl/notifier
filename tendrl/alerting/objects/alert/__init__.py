@@ -1,8 +1,8 @@
 from tendrl.alerting import constants
-from tendrl.alerting.objects \
-    import AlertingBaseObject
 from tendrl.commons.etcdobj import EtcdObj
 from tendrl.commons.utils.time_utils import now
+from tendrl.commons.objects import BaseObject
+
 
 alert_severity_map = {
     'INFO': 0,
@@ -11,7 +11,7 @@ alert_severity_map = {
 }
 
 
-class Alert(AlertingBaseObject):
+class Alert(BaseObject):
     def __init__(
         self,
         alert_id=None,

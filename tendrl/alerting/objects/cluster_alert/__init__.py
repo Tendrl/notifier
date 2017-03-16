@@ -1,10 +1,9 @@
-from tendrl.alerting.objects \
-    import AlertingBaseObject
 from tendrl.alerting.objects.alert import Alert
 from tendrl.commons.etcdobj import EtcdObj
+from tendrl.commons.objects import BaseObject
 
 
-class ClusterAlert(Alert, AlertingBaseObject):
+class ClusterAlert(Alert, BaseObject):
     def __init__(
         self,
         alert_id=None,

@@ -45,7 +45,7 @@ class AlertHandler(object):
     def update_alert(self):
         # Fetch alerts in etcd
         try:
-            alerts = tendrl_ns.central_store_thread.get_alerts()
+            alerts = NS.central_store_thread.get_alerts()
             # Check if similar alert already exists
             for curr_alert in alerts:
                 # If similar alert exists, update the similar alert to etcd
@@ -99,7 +99,7 @@ class AlertHandler(object):
             self.alert = alert_obj
             self.alert.significance = constants.SIGNIFICANCE_HIGH
             self.update_alert()
-            tendrl_ns.notification_plugin_manager.notify_alert(self.alert)
+            NS.notification_plugin_manager.notify_alert(self.alert)
         except Exception as ex:
             Event(
                 ExceptionMessage(
@@ -151,21 +151,21 @@ class AlertHandlerManager(multiprocessing.Process):
 
     def init_alerttypes(self):
         for handler in AlertHandler.handlers:
-            tendrl_ns.alert_types.append(handler.representive_name)
+            NS.alert_types.append(handler.representive_name)
 
     def run(self):
         try:
             while not self.complete.is_set():
-                new_msg_id = tendrl_ns.alert_queue.get()
+                new_msg_id = NS.alert_queue.get()
                 time.sleep(15)
-                msg_priority = tendrl_ns.etcd_orm.client.read(
-                    '/Messages/%s/priority' % new_msg_id
+                msg_priority = NS.etcd_orm.client.read(
+                    '/Messages/events/%s/priority' % new_msg_id
                 ).value
                 if msg_priority == 'notice':
-                    new_alert_str = tendrl_ns.etcd_orm.client.read(
-                        '/Messages/%s/payload' % new_msg_id,
+                    new_alert_str = NS.etcd_orm.client.read(
+                        '/Messages/events/%s/payload' % new_msg_id,
                         recursive=True
-                    )._children[0]['value']
+                    ).leaves[0].value
                     new_alert = json.loads(new_alert_str)
                     new_alert['alert_id'] = new_msg_id
                     new_alert_obj = AlertUtils().to_obj(new_alert)
