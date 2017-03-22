@@ -64,11 +64,11 @@ class EmailHandler(NotificationPlugin):
         # underneath needs to be enhanced for that.
         user_configs = []
         try:
-            users = tendrl_ns.etcd_orm.client.read('/_tendrl/users')
-            for user in users._children:
-                user_key = user['key']
+            users = NS.etcd_orm.client.read('/_tendrl/users')
+            for user in users.leaves:
+                user_key = user.key
                 try:
-                    user_email = tendrl_ns.etcd_orm.client.read(
+                    user_email = NS.etcd_orm.client.read(
                         "%s/email" % user_key
                     ).value
                     user_configs.append(user_email)
@@ -106,7 +106,7 @@ class EmailHandler(NotificationPlugin):
             if alert.resource == alert_handler.handles:
                 #ideally iterate per user and formulate
                 #the list of eligible users
-                if tendrl_ns.notification_subscriptions['%s_%s' % (
+                if NS.notification_subscriptions['%s_%s' % (
                     self.name,
                     alert_handler.representive_name
                 )] == "true":

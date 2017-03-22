@@ -7,19 +7,21 @@ from tendrl.alerting.notification.exceptions import NotificationDispatchError
 from tendrl.alerting.notification import NotificationPluginManager
 from tendrl.alerting.watcher import AlertsWatchManager
 from tendrl.alerting.handlers import AlertHandlerManager
+from tendrl.alerting import AlertingNS
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
 from tendrl.commons.message import Message
+from tendrl.commons import TendrlNS
 
 
 class TendrlAlertingManager(object):
     def __init__(self):
         try:
-            tendrl_ns.alert_queue = multiprocessing.Queue()
-            tendrl_ns.alert_types = []
-            tendrl_ns.notification_medium = []
+            NS.alert_queue = multiprocessing.Queue()
+            NS.alert_types = []
+            NS.notification_medium = []
             self.alert_handler_manager = AlertHandlerManager()
-            tendrl_ns.notification_plugin_manager = NotificationPluginManager()
+            NS.notification_plugin_manager = NotificationPluginManager()
             self.watch_manager = AlertsWatchManager()
         except (AlertingError) as ex:
             Event(
@@ -57,7 +59,7 @@ class TendrlAlertingManager(object):
 
     def stop(self):
         try:
-            tendrl_ns.alert_queue.close()
+            NS.alert_queue.close()
             self.watch_manager.stop()
             os.system("ps -C tendrl-alerting -o pid=|xargs kill -9")
         except Exception as ex:
@@ -75,9 +77,12 @@ class TendrlAlertingManager(object):
 
 
 def main():
-    tendrl_ns.central_store_thread = AlertingEtcdPersister()
-    tendrl_ns.definitions.save()
-    tendrl_ns.config.save()
+    AlertingNS()
+    TendrlNS()
+    NS.central_store_thread = AlertingEtcdPersister()
+    NS.alerting.definitions.save()
+    NS.alerting.config.save()
+    NS.publisher_id = "alerting"
 
     tendrl_alerting_manager = TendrlAlertingManager()
 
