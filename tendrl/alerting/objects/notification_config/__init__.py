@@ -1,9 +1,8 @@
-from tendrl.alerting.objects \
-    import AlertingBaseObject
 from tendrl.commons.etcdobj import EtcdObj
+from tendrl.commons.objects import BaseObject
 
 
-class NotificationConfig(AlertingBaseObject):
+class NotificationConfig(BaseObject):
     def __init__(self, config=None, *args, **kwargs):
         super(NotificationConfig, self).__init__(*args, **kwargs)
         self.config = config

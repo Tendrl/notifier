@@ -1,9 +1,8 @@
-from tendrl.alerting.objects \
-    import AlertingBaseObject
 from tendrl.commons.etcdobj import EtcdObj
+from tendrl.commons.objects import BaseObject
 
 
-class AlertTypes(AlertingBaseObject):
+class AlertTypes(BaseObject):
     def __init__(self, types=None, *args, **kwargs):
         super(AlertTypes, self).__init__(*args, **kwargs)
         self.value = 'alerting/alert_types/types'
