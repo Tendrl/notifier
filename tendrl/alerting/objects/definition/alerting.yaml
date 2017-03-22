@@ -1,5 +1,5 @@
 ---
-namespace.alerting:
+namespace.alerting.objects.Definitions:
   objects:
     Definition:
       enabled: True
