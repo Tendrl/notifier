@@ -165,7 +165,7 @@ class AlertHandlerManager(multiprocessing.Process):
                     new_alert_str = NS.etcd_orm.client.read(
                         '/Messages/events/%s/payload' % new_msg_id,
                         recursive=True
-                    ).leaves[0].value
+                    ).leaves.next().value
                     new_alert = json.loads(new_alert_str)
                     new_alert['alert_id'] = new_msg_id
                     new_alert_obj = AlertUtils().to_obj(new_alert)
