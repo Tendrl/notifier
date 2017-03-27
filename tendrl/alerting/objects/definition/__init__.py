@@ -9,9 +9,11 @@ from tendrl.commons import etcdobj
 
 
 class Definition(objects.BaseObject):
-    def __init__(self, *args, **kwargs):
-        super(Definition, self).__init__(*args, **kwargs)
+    internal = True
 
+    def __init__(self, *args, **kwargs):
+        self._defs = {}
+        super(Definition, self).__init__(*args, **kwargs)
         self.value = '_NS/alerting/definitions'
         self.data = pkg_resources.resource_string(
             __name__,
