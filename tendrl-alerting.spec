@@ -36,6 +36,7 @@ install -m  0755  --directory $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/alerting
 install -m  0755  --directory $RPM_BUILD_ROOT%{_datadir}/tendrl/alerting
 install -Dm 0644 tendrl-alerting.service $RPM_BUILD_ROOT%{_unitdir}/tendrl-alerting.service
 install -Dm 0644 etc/tendrl/alerting.conf.yaml.sample $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/alerting/alerting.conf.yaml
+install -Dm 0644 etc/tendrl/alerting_logging.yaml.sample $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/alerting/alerting_logging.yaml
 install -Dm 0644 etc/tendrl/email.conf.yaml.sample $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/alerting/email.conf.yaml
 install -Dm 644 etc/*.sample $RPM_BUILD_ROOT%{_datadir}/tendrl/alerting/.
 
