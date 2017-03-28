@@ -1,24 +1,6 @@
 ---
 namespace.alerting:
   objects:
-    Definition:
-      enabled: True
-      help: "Definition"
-      value: _NS/alerting/definitions
-      list: _NS/alerting/definitions
-      attrs:
-        data:
-          help: Alerting definitions
-          type: String
-    Config:
-      attrs:
-        data:
-          help: Configuration data of alerting for this Tendrl deployment
-          type: str
-      enabled: true
-      value: _NS/alerting/config
-      list: _NS/alerting/config
-      help: alerting integration component configuration
     Alert:
       attrs:
         alert_id:
@@ -189,45 +171,6 @@ namespace.alerting:
       enabled: true
       value: alerting/alert_types
       help: 'Alert types'
-    NodeContext:
-      attrs:
-        machine_id:
-          help: "Unique /etc/machine-id"
-          type: str
-        fqdn:
-          help: "FQDN of the Tendrl managed node"
-          type: str
-        node_id:
-          help: "Tendrl ID for the managed node"
-          type: str
-        tags:
-          help: "The tags associated with this node"
-          type: str
-        status:
-          help: "Node status"
-          type: str
-      enabled: true
-      list: nodes/$NodeContext.node_id/NodeContext
-      value: nodes/$NodeContext.node_id/NodeContext
-      help: Node Context
-    TendrlContext:
-      enabled: True
-      attrs:
-        integration_id:
-          help: "Tendrl managed id for performance-integration"
-          type: String
-        sds_name:
-          help: "Name of the Tendrl managed sds, eg: 'gluster'"
-          type: String
-        sds_version:
-          help: "Version of the Tendrl managed sds, eg: '3.2.1'"
-          type: String
-        node_id:
-          help: "Tendrl ID for the node"
-          type: String
-      value: nodes/$NodeContext.node_id/TendrlContext
-      list: nodes/$NodeContext.node_id/TendrlContext
-      help: "Tendrl context"
     NotificationConfig:
       enabled: True
       attrs:
