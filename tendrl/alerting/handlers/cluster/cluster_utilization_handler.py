@@ -25,4 +25,4 @@ class ClusterUtilizationHandler(AlertHandler):
             acked=self.alert.acked,
             pid=self.alert.pid,
             source=self.alert.source,
-        ).save()
+        ).save(update=False)

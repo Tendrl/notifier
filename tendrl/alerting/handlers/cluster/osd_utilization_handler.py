@@ -2,10 +2,10 @@ from tendrl.alerting.handlers import AlertHandler
 from tendrl.alerting.objects.cluster_alert import ClusterAlert
 
 
-class VolumeUtilizationHandler(AlertHandler):
+class OSDUtilizationHandler(AlertHandler):
 
-    handles = 'volume_utilization'
-    representive_name = 'volume_utilization_alert'
+    handles = 'osd_utilization'
+    representive_name = 'osd_utilization_alert'
 
     def __init__(self):
         AlertHandler.__init__(self)

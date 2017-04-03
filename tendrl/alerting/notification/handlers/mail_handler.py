@@ -157,7 +157,7 @@ class EmailHandler(NotificationPlugin):
                     int(self.admin_config['email_smtp_port'])
                 )
                 return server
-            except (smtplib.socket.gaierror, smtplib.SMTPException) as ex:
+            except (smtplib.socket.gaierror, smtplib.SMTPException, Exception) as ex:
                 Event(
                     ExceptionMessage(
                         priority="error",
@@ -200,6 +200,7 @@ class EmailHandler(NotificationPlugin):
                 raise NotificationDispatchError(str(ex))
 
     def dispatch_notification(self, alert):
+        server = None
         try:
             self.set_destinations()
         except NotificationDispatchError as ex:
@@ -289,4 +290,5 @@ class EmailHandler(NotificationPlugin):
                 )
             )
         finally:
-            server.close()
+            if server:
+                server.close()
