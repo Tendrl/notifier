@@ -1,5 +1,5 @@
 Name: tendrl-alerting
-Version: 1.2
+Version: 1.2.2
 Release: 1%{?dist}
 BuildArch: noarch
 Summary: Module for Tendrl Alerting
@@ -67,5 +67,8 @@ py.test -v tendrl/alerting/tests || :
 %{_unitdir}/tendrl-alerting.service
 
 %changelog
+* Wed Apr 05 2017 Rohan Kanade <rkanade@redhat.com> - 1.2.2-1
+- Release tendrl-alerting v1.2.2
+
 * Tue Mar 07 2017 Timothy Asir Jeyasingh <tjeyasin@redhat.com> - 1.2-1
 - Initial build.
