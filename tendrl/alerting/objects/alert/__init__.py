@@ -69,18 +69,7 @@ class AlertUtils(object):
     def equals(self, alert1, alert2):
         return (
             alert1.alert_id == alert2.alert_id and
-            alert1.node_id == alert2.node_id and
-            alert1.time_stamp == alert2.time_stamp and
-            alert1.resource == alert2.resource and
-            alert1.current_value == alert2.current_value and
-            alert1.tags == alert2.tags and
-            alert1.alert_type == alert2.alert_type and
-            alert1.severity == alert2.severity and
-            alert1.significance == alert2.significance and
-            alert1.ackedby == alert2.ackedby and
-            alert1.acked == alert2.acked and
-            alert1.pid == alert2.pid and
-            alert1.source == alert2.source
+            alert1.acked == alert2.acked
         )
 
     def update(self, new_alert, existing_alert):
@@ -112,17 +101,16 @@ class AlertUtils(object):
                     alert2.tags['plugin_instance']
                 ):
                     return False
-        if 'Tendrl_context.integration_id' in alert1.tags:
-            if 'Tendrl_context.integration_id' in alert2.tags:
+        if 'cluster_id' in alert1.tags:
+            if 'cluster_id' in alert2.tags:
                 if (
-                    alert1.tags['Tendrl_context.integration_id'] !=
-                    alert2.tags['Tendrl_context.integration_id']
+                    alert1.tags['cluster_id'] != alert2.tags['cluster_id']
                 ):
                     return False
             else:
                 return False
-        if 'Tendrl_context.integration_id' not in alert1.tags:
-            if 'Tendrl_context.integration_id' in alert2.tags:
+        if 'cluster_id' not in alert1.tags:
+            if 'cluster_id' in alert2.tags:
                 return False
             if alert1.node_id != alert2.node_id:
                 return False

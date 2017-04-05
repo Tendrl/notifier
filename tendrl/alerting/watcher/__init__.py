@@ -19,7 +19,7 @@ class AlertsWatchManager(multiprocessing.Process):
         try:
             while not self.complete.is_set():
                 new_message = self.etcd_client.watch(
-                    '/Messages/events',
+                    '/messages/events',
                     recursive=True,
                     timeout=0
                 )
@@ -31,7 +31,7 @@ class AlertsWatchManager(multiprocessing.Process):
                     continue
                 msg_parts = new_message.key.split('/')
                 if (
-                    new_message.key.startswith('/Messages/events') and
+                    new_message.key.startswith('/messages/events') and
                     len(msg_parts) >= 4
                 ):
                     message_id = msg_parts[3]

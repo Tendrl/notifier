@@ -60,10 +60,13 @@ class AlertHandler(object):
                     ):
                         self.alert.save()
                         self.classify_alert()
+                        NS.notification_plugin_manager.notify_alert(self.alert)
+                        return
                     return
                 # else add this new alert to etcd
             self.alert.save()
             self.classify_alert()
+            NS.notification_plugin_manager.notify_alert(self.alert)
         except etcd.EtcdKeyNotFound:
             try:
                 self.alert.save()
@@ -99,7 +102,6 @@ class AlertHandler(object):
             self.alert = alert_obj
             self.alert.significance = constants.SIGNIFICANCE_HIGH
             self.update_alert()
-            NS.notification_plugin_manager.notify_alert(self.alert)
         except Exception as ex:
             Event(
                 ExceptionMessage(
@@ -159,11 +161,11 @@ class AlertHandlerManager(multiprocessing.Process):
                 new_msg_id = NS.alert_queue.get()
                 time.sleep(15)
                 msg_priority = NS.etcd_orm.client.read(
-                    '/Messages/events/%s/priority' % new_msg_id
+                    '/messages/events/%s/priority' % new_msg_id
                 ).value
                 if msg_priority == 'notice':
                     new_alert_str = NS.etcd_orm.client.read(
-                        '/Messages/events/%s/payload' % new_msg_id,
+                        '/messages/events/%s/payload' % new_msg_id,
                         recursive=True
                     ).leaves.next().value
                     new_alert = json.loads(new_alert_str)
@@ -190,7 +192,7 @@ class AlertHandlerManager(multiprocessing.Process):
                         )
                         raise NoHandlerException(
                             'No alert handler defined for %s and hence cannot handle'
-                            'alert %s' % (new_alert.resource, str(new_alert))
+                            'alert %s' % (new_alert['resource'], str(new_alert))
                         )
         except Exception as ex:
             Event(
