@@ -8,6 +8,7 @@ from tendrl.alerting.notification.exceptions import NotificationPluginError
 from tendrl.alerting.objects.notification_media import NotificationMedia
 from tendrl.alerting.objects.notification_config import NotificationConfig
 from tendrl.alerting.utils import list_modules_in_package_path
+from tendrl.alerting.utils import read as etcd_read
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
 
@@ -117,8 +118,11 @@ class NotificationPluginManager(object):
             raise AlertingError(str(ex))
 
     def notify_alert(self, alert):
-        NS.notification_subscriptions = \
-            NotificationConfig().load().config
+        # TODO: Revert to object#load method of loading objects once loading of
+        # nested dicts in objects is fixed in commons.
+        NS.notification_subscriptions = etcd_read(
+            '/notification_settings/config'
+        )
         if alert is not None:
             for plugin in NotificationPlugin.plugins:
                 plugin.dispatch_notification(alert)

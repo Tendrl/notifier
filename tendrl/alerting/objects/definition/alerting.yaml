@@ -20,7 +20,7 @@ namespace.alerting:
           type: String
         tags:
           help: 'Alert specific fields that cannot be generalized for all alerts'
-          type: json
+          type: Dict
         alert_type:
           help: 'The type(status/percentage utilization) of alert'
           type: String
@@ -71,7 +71,7 @@ namespace.alerting:
           type: String
         tags:
           help: 'Alert specific fields that cannot be generalized for all alerts'
-          type: json
+          type: Dict
         alert_type:
           help: 'The type(status/percentage utilization) of alert'
           type: String
@@ -122,7 +122,7 @@ namespace.alerting:
           type: String
         tags:
           help: 'Alert specific fields that cannot be generalized for all alerts'
-          type: json
+          type: Dict
         alert_type:
           help: 'The type(status/percentage utilization) of alert'
           type: String
@@ -165,8 +165,8 @@ namespace.alerting:
       enabled: true
     AlertTypes:
       attrs:
-        types: List
-        help: 'A dict of integration to types of alerts the integration handles'
+        type: List
+        help: 'A Dict of integration to types of alerts the integration handles'
       list: alerting/alert_types
       enabled: true
       value: alerting/alert_types
@@ -176,7 +176,7 @@ namespace.alerting:
       attrs:
         config:
           help: "Notification global configuration"
-          type: json
+          type: Dict
       value: notification_settings/
       list: notification_settings/
       help: "Notification configuration"

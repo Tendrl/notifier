@@ -1,5 +1,7 @@
 from tendrl.alerting.objects.alert import Alert
+from tendrl.alerting.objects.alert import AlertUtils
 from tendrl.alerting.objects.alert_types import AlertTypes
+from tendrl.alerting.utils import read as etcd_read
 from tendrl.commons import central_store
 
 
@@ -20,13 +22,12 @@ class AlertingEtcdPersister(central_store.EtcdCentralStore):
         return Alert(alert_id).load()
 
     def get_alerts(self):
+        # TODO: Revert to using object#load instead of etcd read
+        # once the issue in object#load is found and fixed.
         alerts_arr = []
-        alerts = NS.etcd_orm.client.read('/alerting/alerts')
-        for child in alerts.leaves:
-            alert_id = (child.key)[len('/alerting/alerts/'):]
-            alerts_arr.append(
-                Alert(alert_id=alert_id).load()
-            )
+        alerts = etcd_read('/alerting/alerts')
+        for alert_id, alert in alerts.iteritems():
+            alerts_arr.append(AlertUtils().to_obj(alert))
         return alerts_arr
 
     def save_alert(self, alert):
