@@ -10,14 +10,6 @@ except ImportError:
     pass
 
 
-def extract_requirements(filename):
-    with open(filename, 'r') as requirements_file:
-        return [
-            x.strip() for x in requirements_file.readlines()
-            if not x.startswith("#") and x[:-1] != ''
-        ]
-
-
 def read_module_contents():
     with open('version.py') as app_init:
         return app_init.read()
