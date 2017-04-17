@@ -9,6 +9,17 @@ class AlertingEtcdPersister(central_store.EtcdCentralStore):
     def __init__(self):
         super(AlertingEtcdPersister, self).__init__()
 
+    def get_event_ids(self):
+        event_ids = []
+        etcd_events = NS.etcd_orm.client.read(
+            '/messages/events'
+        )
+        for event in etcd_events.leaves:
+            event_parts = event.key.split('/')
+            if len(event_parts) >= 4:
+                event_ids.append(event_parts[3])
+        return event_ids
+
     def save_config(self, config):
         NS.etcd_orm.save(config)
 
