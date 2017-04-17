@@ -1,4 +1,4 @@
-import multiprocessing
+from gevent.queue import Queue
 import os
 import signal
 from tendrl.alerting.central_store import AlertingEtcdPersister
@@ -17,7 +17,7 @@ from tendrl.commons import TendrlNS
 class TendrlAlertingManager(object):
     def __init__(self):
         try:
-            NS.alert_queue = multiprocessing.Queue()
+            NS.alert_queue = Queue()
             NS.alert_types = []
             NS.notification_medium = []
             self.alert_handler_manager = AlertHandlerManager()
@@ -38,6 +38,7 @@ class TendrlAlertingManager(object):
 
     def start(self):
         try:
+            NS.central_store_thread.start()
             self.alert_handler_manager.start()
             self.watch_manager.run()
         except (
@@ -59,9 +60,8 @@ class TendrlAlertingManager(object):
 
     def stop(self):
         try:
-            NS.alert_queue.close()
             self.watch_manager.stop()
-            os.system("ps -C tendrl-alerting -o pid=|xargs kill -9")
+            NS.central_store_thread.stop()
         except Exception as ex:
             Event(
                 ExceptionMessage(

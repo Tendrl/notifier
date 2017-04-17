@@ -1,55 +1,38 @@
-import multiprocessing
-from tendrl.commons.etcdobj import Server as etcd_server
+from etcd import EtcdKeyNotFound
+import gevent
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
 
 
-class AlertsWatchManager(multiprocessing.Process):
+class AlertsWatchManager(gevent.greenlet.Greenlet):
     def __init__(self):
         super(AlertsWatchManager, self).__init__()
-        etcd_kwargs = {
-            'port': int(NS.alerting.config.data["etcd_port"]),
-            'host': NS.alerting.config.data["etcd_connection"]
-        }
-        self.etcd_client = etcd_server(etcd_kwargs=etcd_kwargs).client
-        self.complete = multiprocessing.Event()
+        self.complete = gevent.event.Event()
         self.handled_msgs = []
 
-    def run(self):
-        try:
-            while not self.complete.is_set():
-                new_message = self.etcd_client.watch(
-                    '/messages/events',
-                    recursive=True,
-                    timeout=0
+    def _run(self):
+        while not self.complete.is_set():
+            try:
+                event_ids = NS.central_store_thread.get_event_ids()
+                for event_id in event_ids:
+                    if event_id not in self.handled_msgs:
+                        self.handled_msgs.append(event_id)
+                        NS.alert_queue.put(event_id)
+            except EtcdKeyNotFound:
+                continue
+            except Exception as ex:
+                Event(
+                    ExceptionMessage(
+                        priority="error",
+                        publisher="alerting",
+                        payload={
+                            "message": 'Exception in alert watcher',
+                            "exception": ex
+                        }
+                    )
                 )
-                if (
-                    new_message is None or
-                    str(new_message.action) == 'delete' or
-                    not new_message
-                ):
-                    continue
-                msg_parts = new_message.key.split('/')
-                if (
-                    new_message.key.startswith('/messages/events') and
-                    len(msg_parts) >= 4
-                ):
-                    message_id = msg_parts[3]
-                    if message_id not in self.handled_msgs:
-                        self.handled_msgs.append(message_id)
-                        NS.alert_queue.put(message_id)
-        except Exception as ex:
-            Event(
-                ExceptionMessage(
-                    priority="error",
-                    publisher="alerting",
-                    payload={
-                        "message": 'Exception in alert watcher',
-                        "exception": ex
-                    }
-                )
-            )
-            raise ex
+                raise ex
+            gevent.sleep(30)
 
     def stop(self):
         self.complete.set()
