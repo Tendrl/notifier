@@ -1,8 +1,8 @@
 import etcd
+import gevent
 import importlib
 import inspect
 import json
-import multiprocessing
 import os
 from tendrl.alerting.utils import list_modules_in_package_path
 import six
@@ -12,7 +12,6 @@ from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
 from tendrl.commons.message import Message
 from tendrl.commons.utils.time_utils import now
-import time
 
 
 class NoHandlerException(Exception):
@@ -119,7 +118,7 @@ class AlertHandler(object):
             )
 
 
-class AlertHandlerManager(multiprocessing.Process):
+class AlertHandlerManager(gevent.greenlet.Greenlet):
     def load_handlers(self):
         path = os.path.dirname(os.path.abspath(__file__))
         pkg = 'tendrl.alerting.handlers'
@@ -135,7 +134,7 @@ class AlertHandlerManager(multiprocessing.Process):
         super(AlertHandlerManager, self).__init__()
         try:
             self.alert_handlers = []
-            self.complete = multiprocessing.Event()
+            self.complete = gevent.event.Event()
             self.load_handlers()
             self.init_alerttypes()
         except (SyntaxError, ValueError, ImportError) as ex:
@@ -155,11 +154,11 @@ class AlertHandlerManager(multiprocessing.Process):
         for handler in AlertHandler.handlers:
             NS.alert_types.append(handler.representive_name)
 
-    def run(self):
+    def _run(self):
         try:
             while not self.complete.is_set():
                 new_msg_id = NS.alert_queue.get()
-                time.sleep(15)
+                gevent.sleep(15)
                 msg_priority = NS.etcd_orm.client.read(
                     '/messages/events/%s/priority' % new_msg_id
                 ).value
