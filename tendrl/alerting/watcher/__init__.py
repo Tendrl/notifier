@@ -12,6 +12,7 @@ class AlertsWatchManager(gevent.greenlet.Greenlet):
 
     def _run(self):
         while not self.complete.is_set():
+            gevent.sleep(30)
             try:
                 event_ids = NS.central_store_thread.get_event_ids()
                 for event_id in event_ids:
@@ -32,7 +33,6 @@ class AlertsWatchManager(gevent.greenlet.Greenlet):
                     )
                 )
                 raise ex
-            gevent.sleep(30)
 
     def stop(self):
         self.complete.set()
