@@ -1,9 +1,9 @@
 from tendrl.alerting.objects.alert import Alert
-from tendrl.commons.etcdobj import EtcdObj
-from tendrl.commons.objects import BaseObject
+
+from tendrl.commons import objects
 
 
-class NodeAlert(Alert, BaseObject):
+class NodeAlert(Alert, objects.BaseObject):
     def __init__(
         self,
         alert_id=None,
@@ -43,20 +43,8 @@ class NodeAlert(Alert, BaseObject):
             *args,
             **kwargs
         )
-        self.value = 'alerting/nodes/%s/%s' % (
-            node_id,
-            alert_id
-        )
-        self._etcd_cls = _NodeAlert
-
-
-class _NodeAlert(EtcdObj):
-    __name__ = 'alerting/nodes/%s/%s'
-    _tendrl_cls = NodeAlert
+        self.value = 'alerting/nodes/{0}/{1}'
 
     def render(self):
-        self.__name__ = self.__name__ % (
-            self.node_id,
-            self.alert_id
-        )
-        return super(_NodeAlert, self).render()
+        self.value = self.value.format(self.node_id, self.alert_id)
+        return super(NodeAlert, self).render()

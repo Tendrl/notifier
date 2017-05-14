@@ -24,7 +24,7 @@ def list_modules_in_package_path(package_path, prefix):
 # this function can return json for any etcd key
 def read(key):
     result = {}
-    job = NS.etcd_orm.client.read(key)
+    job = NS._int.client.read(key)
     if hasattr(job, 'leaves'):
         for item in job.leaves:
             if item.dir is True:
