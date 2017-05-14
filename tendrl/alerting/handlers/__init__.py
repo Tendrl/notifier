@@ -159,11 +159,11 @@ class AlertHandlerManager(gevent.greenlet.Greenlet):
             while not self.complete.is_set():
                 new_msg_id = NS.alert_queue.get()
                 gevent.sleep(15)
-                msg_priority = NS.etcd_orm.client.read(
+                msg_priority = NS._int.client.read(
                     '/messages/events/%s/priority' % new_msg_id
                 ).value
                 if msg_priority == 'notice':
-                    new_alert_str = NS.etcd_orm.client.read(
+                    new_alert_str = NS._int.client.read(
                         '/messages/events/%s/payload' % new_msg_id,
                         recursive=True
                     ).leaves.next().value

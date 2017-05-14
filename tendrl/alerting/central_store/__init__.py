@@ -5,13 +5,16 @@ from tendrl.alerting.utils import read as etcd_read
 from tendrl.commons import central_store
 
 
+# TODO WARNING (anmolB) central_store.EtcdCentralStore will be deprecated,
+# please convert methods in this class to utility functions
+
 class AlertingEtcdPersister(central_store.EtcdCentralStore):
     def __init__(self):
         super(AlertingEtcdPersister, self).__init__()
 
     def get_event_ids(self):
         event_ids = []
-        etcd_events = NS.etcd_orm.client.read(
+        etcd_events = NS._int.client.read(
             '/messages/events'
         )
         for event in etcd_events.leaves:
@@ -19,12 +22,6 @@ class AlertingEtcdPersister(central_store.EtcdCentralStore):
             if len(event_parts) >= 4:
                 event_ids.append(event_parts[3])
         return event_ids
-
-    def save_config(self, config):
-        NS.etcd_orm.save(config)
-
-    def save_definition(self, definition):
-        NS.etcd_orm.save(definition)
 
     def get_alert_types(self):
         return AlertTypes().load()
@@ -40,24 +37,3 @@ class AlertingEtcdPersister(central_store.EtcdCentralStore):
         for alert_id, alert in alerts.iteritems():
             alerts_arr.append(AlertUtils().to_obj(alert))
         return alerts_arr
-
-    def save_alert(self, alert):
-        NS.etcd_orm.save(alert)
-
-    def save_nodealert(self, node_alert):
-        NS.etcd_orm.save(node_alert)
-
-    def save_notificationmedia(self, notification_media):
-        NS.etcd_orm.save(notification_media)
-
-    def save_alerttypes(self, alert_types):
-        NS.etcd_orm.save(alert_types)
-
-    def save_notificationconfigfield(self, notification_config_field):
-        NS.etcd_orm.save(notification_config_field)
-
-    def save_notificationconfig(self, notification_config):
-        NS.etcd_orm.save(notification_config)
-
-    def save_clusteralert(self, cluster_alert):
-        NS.etcd_orm.save(cluster_alert)

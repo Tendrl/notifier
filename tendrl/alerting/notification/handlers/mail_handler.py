@@ -64,11 +64,11 @@ class EmailHandler(NotificationPlugin):
         # underneath needs to be enhanced for that.
         user_configs = []
         try:
-            users = NS.etcd_orm.client.read('/_tendrl/users')
+            users = NS._int.client.read('/_tendrl/users')
             for user in users.leaves:
                 user_key = user.key
                 try:
-                    user_email = NS.etcd_orm.client.read(
+                    user_email = NS._int.client.read(
                         "%s/email" % user_key
                     ).value
                     user_configs.append(user_email)
