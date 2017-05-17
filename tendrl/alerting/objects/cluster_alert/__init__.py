@@ -1,9 +1,9 @@
 from tendrl.alerting.objects.alert import Alert
-from tendrl.commons.etcdobj import EtcdObj
-from tendrl.commons.objects import BaseObject
+
+from tendrl.commons import objects
 
 
-class ClusterAlert(Alert, BaseObject):
+class ClusterAlert(Alert, objects.BaseObject):
     def __init__(
         self,
         alert_id=None,
@@ -43,20 +43,10 @@ class ClusterAlert(Alert, BaseObject):
             *args,
             **kwargs
         )
-        self.value = 'alerting/clusters/%s/%s' % (
-            self.tags['cluster_id'],
-            alert_id
-        )
-        self._etcd_cls = _ClusterAlert
-
-
-class _ClusterAlert(EtcdObj):
-    __name__ = 'alerting/clusters/%s/%s'
-    _tendrl_cls = ClusterAlert
+        self.value = 'alerting/clusters/{0}/{1}'
 
     def render(self):
-        self.__name__ = self.__name__ % (
-            self.tags['cluster_id'],
-            self.alert_id
-        )
-        return super(_ClusterAlert, self).render()
+        self.value = self.value.format(self.tags['cluster_id'],
+                                       self.alert_id
+                                       )
+        return super(ClusterAlert, self).render()

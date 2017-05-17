@@ -1,7 +1,7 @@
 from tendrl.alerting import constants
-from tendrl.commons.etcdobj import EtcdObj
+
 from tendrl.commons.utils.time_utils import now
-from tendrl.commons.objects import BaseObject
+from tendrl.commons import objects
 
 
 alert_severity_map = {
@@ -11,7 +11,7 @@ alert_severity_map = {
 }
 
 
-class Alert(BaseObject):
+class Alert(objects.BaseObject):
     def __init__(
         self,
         alert_id=None,
@@ -48,21 +48,12 @@ class Alert(BaseObject):
         self.acked_at = acked_at
         self.pid = pid
         self.source = source
-        self._etcd_cls = _AlertEtcd
-        self.value = 'alerting/alerts/%s' % self.alert_id
+        self.value = 'alerting/alerts/{0}'
         self.list = 'alerting/alerts'
 
-
-class _AlertEtcd(EtcdObj):
-    """A table of the node context, lazily updated
-
-    """
-    __name__ = 'alerting/alerts/%s'
-    _tendrl_cls = Alert
-
     def render(self):
-        self.__name__ = self.__name__ % self.alert_id
-        return super(_AlertEtcd, self).render()
+        self.value = self.value.format(self.alert_id)
+        return super(Alert, self).render()
 
 
 class AlertUtils(object):
