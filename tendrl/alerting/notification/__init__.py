@@ -7,8 +7,8 @@ from tendrl.alerting.exceptions import AlertingError
 from tendrl.alerting.notification.exceptions import NotificationPluginError
 from tendrl.alerting.objects.notification_media import NotificationMedia
 from tendrl.alerting.objects.notification_config import NotificationConfig
-from tendrl.alerting.utils import list_modules_in_package_path
-from tendrl.alerting.utils import read as etcd_read
+from tendrl.alerting.utils.util import list_modules_in_package_path
+from tendrl.alerting.utils.central_store_util import read as etcd_read
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
 

@@ -1,5 +1,6 @@
 from etcd import EtcdKeyNotFound
 import gevent
+import tendrl.alerting.utils.central_store_util as central_store_util
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
 
@@ -14,7 +15,7 @@ class AlertsWatchManager(gevent.greenlet.Greenlet):
         while not self.complete.is_set():
             gevent.sleep(30)
             try:
-                event_ids = NS.central_store_thread.get_event_ids()
+                event_ids = central_store_util.get_event_ids()
                 for event_id in event_ids:
                     if event_id not in self.handled_msgs:
                         self.handled_msgs.append(event_id)
