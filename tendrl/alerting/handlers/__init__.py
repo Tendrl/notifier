@@ -4,7 +4,8 @@ import importlib
 import inspect
 import json
 import os
-from tendrl.alerting.utils import list_modules_in_package_path
+from tendrl.alerting.utils.util import list_modules_in_package_path
+import tendrl.alerting.utils.central_store_util as central_store_util
 import six
 from tendrl.alerting import constants
 from tendrl.alerting.objects.alert import AlertUtils
@@ -44,7 +45,7 @@ class AlertHandler(object):
     def update_alert(self):
         # Fetch alerts in etcd
         try:
-            alerts = NS.central_store_thread.get_alerts()
+            alerts = central_store_util.get_alerts()
             # Check if similar alert already exists
             for curr_alert in alerts:
                 # If similar alert exists, update the similar alert to etcd

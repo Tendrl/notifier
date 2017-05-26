@@ -1,2 +1,0 @@
-class EtcdError(Exception):
-    pass
