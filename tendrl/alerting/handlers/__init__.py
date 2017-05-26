@@ -1,5 +1,5 @@
 import etcd
-import gevent
+import gevent.event
 import importlib
 import inspect
 import json
