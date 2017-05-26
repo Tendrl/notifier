@@ -1,7 +1,5 @@
 from gevent.queue import Queue
-import os
 import signal
-from tendrl.alerting.central_store import AlertingEtcdPersister
 from tendrl.alerting.exceptions import AlertingError
 from tendrl.alerting.notification.exceptions import NotificationDispatchError
 from tendrl.alerting.notification import NotificationPluginManager
@@ -38,7 +36,6 @@ class TendrlAlertingManager(object):
 
     def start(self):
         try:
-            NS.central_store_thread.start()
             self.alert_handler_manager.start()
             self.watch_manager.run()
         except (
@@ -61,7 +58,6 @@ class TendrlAlertingManager(object):
     def stop(self):
         try:
             self.watch_manager.stop()
-            NS.central_store_thread.stop()
         except Exception as ex:
             Event(
                 ExceptionMessage(
@@ -79,7 +75,6 @@ class TendrlAlertingManager(object):
 def main():
     AlertingNS()
     TendrlNS()
-    NS.central_store_thread = AlertingEtcdPersister()
     NS.alerting.definitions.save()
     NS.alerting.config.save()
     NS.publisher_id = "alerting"
