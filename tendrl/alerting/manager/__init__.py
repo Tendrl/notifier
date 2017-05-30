@@ -3,6 +3,7 @@ import signal
 from tendrl.alerting.exceptions import AlertingError
 from tendrl.alerting.notification.exceptions import NotificationDispatchError
 from tendrl.alerting.notification import NotificationPluginManager
+from tendrl.alerting.sync import TendrlAlertingSync
 from tendrl.alerting.watcher import AlertsWatchManager
 from tendrl.alerting.handlers import AlertHandlerManager
 from tendrl.alerting import AlertingNS
@@ -21,6 +22,7 @@ class TendrlAlertingManager(object):
             self.alert_handler_manager = AlertHandlerManager()
             NS.notification_plugin_manager = NotificationPluginManager()
             self.watch_manager = AlertsWatchManager()
+            self.sync_thread = TendrlAlertingSync()
         except (AlertingError) as ex:
             Event(
                 ExceptionMessage(
@@ -37,6 +39,7 @@ class TendrlAlertingManager(object):
     def start(self):
         try:
             self.alert_handler_manager.start()
+            self.sync_thread.start()
             self.watch_manager.run()
         except (
             AlertingError,
@@ -58,6 +61,7 @@ class TendrlAlertingManager(object):
     def stop(self):
         try:
             self.watch_manager.stop()
+            self.sync_thread.stop()
         except Exception as ex:
             Event(
                 ExceptionMessage(
