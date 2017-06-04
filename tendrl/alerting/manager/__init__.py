@@ -1,3 +1,4 @@
+import gevent
 from gevent.queue import Queue
 import signal
 from tendrl.alerting.exceptions import AlertingError
@@ -40,7 +41,7 @@ class TendrlAlertingManager(object):
         try:
             self.alert_handler_manager.start()
             self.sync_thread.start()
-            self.watch_manager.run()
+            self.watch_manager.start()
         except (
             AlertingError,
             NotificationDispatchError,
@@ -84,6 +85,9 @@ def main():
     NS.publisher_id = "alerting"
 
     tendrl_alerting_manager = TendrlAlertingManager()
+    tendrl_alerting_manager.start()
+
+    complete = gevent.event.Event()
 
     def terminate(sig, frame):
         Event(
@@ -96,9 +100,13 @@ def main():
             )
         )
         tendrl_alerting_manager.stop()
+        complete.set()
 
-    signal.signal(signal.SIGINT, terminate)
-    tendrl_alerting_manager.start()
+    gevent.signal(signal.SIGINT, terminate)
+    gevent.signal(signal.SIGTERM, terminate)
+
+    while not complete.is_set():
+        complete.wait(timeout=1)
 
 
 if __name__ == "__main__":

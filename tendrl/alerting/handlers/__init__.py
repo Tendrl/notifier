@@ -1,3 +1,4 @@
+from abc import abstractmethod
 import etcd
 import gevent.event
 import importlib
@@ -43,6 +44,7 @@ class AlertHandler(object):
         self.alert = None
 
     def update_alert(self):
+        self.format_alert_message()
         # Fetch alerts in etcd
         try:
             alerts = central_store_util.get_alerts()
@@ -93,6 +95,10 @@ class AlertHandler(object):
                     }
                 )
             )
+
+    @abstractmethod
+    def format_alert_message(self):
+        raise NotImplementedError()
 
     def classify_alert(self):
         pass
@@ -156,8 +162,8 @@ class AlertHandlerManager(gevent.greenlet.Greenlet):
             NS.alert_types.append(handler.representive_name)
 
     def _run(self):
-        try:
-            while not self.complete.is_set():
+        while not self.complete.is_set():
+            try:
                 new_msg_id = NS.alert_queue.get()
                 gevent.sleep(15)
                 msg_priority = NS._int.client.read(
@@ -182,8 +188,8 @@ class AlertHandlerManager(gevent.greenlet.Greenlet):
                                 "error",
                                 "alerting",
                                 {
-                                    "message": 'No alert handler defined for %s and'
-                                    '  hence cannot handle alert %s' % (
+                                    "message": 'No alert handler defined for '
+                                    '%s and hence cannot handle alert %s' % (
                                         new_alert_obj.resource,
                                         str(new_alert_obj)
                                     )
@@ -191,20 +197,25 @@ class AlertHandlerManager(gevent.greenlet.Greenlet):
                             )
                         )
                         raise NoHandlerException(
-                            'No alert handler defined for %s and hence cannot handle'
-                            'alert %s' % (new_alert['resource'], str(new_alert))
+                            'No alert handler defined for %s and hence cannot '
+                            'handle alert %s' % (
+                                new_alert['resource'],
+                                str(new_alert)
+                            )
                         )
-        except Exception as ex:
-            Event(
-                ExceptionMessage(
-                    priority="debug",
-                    publisher="alerting",
-                    payload={
-                        "message": "Exception caught starting alert handlers.",
-                        "exception": ex
-                    }
+            except Exception as ex:
+                Event(
+                    ExceptionMessage(
+                        priority="debug",
+                        publisher="alerting",
+                        payload={
+                            "message": "Exception caught starting alert"
+                            " handlers.",
+                            "exception": ex
+                        }
+                    )
                 )
-            )
+                continue
 
     def stop(self):
         self.complete.set()
