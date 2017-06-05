@@ -26,7 +26,7 @@ class TendrlAlertingManager(object):
         except (AlertingError) as ex:
             Event(
                 ExceptionMessage(
-                    priority="error",
+                    priority="debug",
                     publisher="alerting",
                     payload={
                         "message": 'Error intializing alerting manager',

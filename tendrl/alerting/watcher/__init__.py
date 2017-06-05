@@ -25,7 +25,7 @@ class AlertsWatchManager(gevent.greenlet.Greenlet):
             except Exception as ex:
                 Event(
                     ExceptionMessage(
-                        priority="error",
+                        priority="debug",
                         publisher="alerting",
                         payload={
                             "message": 'Exception in alert watcher',
