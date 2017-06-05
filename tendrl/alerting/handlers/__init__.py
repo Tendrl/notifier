@@ -74,7 +74,7 @@ class AlertHandler(object):
             except Exception as ex:
                 Event(
                     ExceptionMessage(
-                        priority="error",
+                        priority="debug",
                         publisher="alerting",
                         payload={
                             "message": "Exception %s in handler",
@@ -85,7 +85,7 @@ class AlertHandler(object):
         except (etcd.EtcdConnectionFailed, Exception) as ex:
             Event(
                 ExceptionMessage(
-                    priority="error",
+                    priority="debug",
                     publisher="alerting",
                     payload={
                         "message": 'Failed to fetch existing alerts.',
@@ -105,7 +105,7 @@ class AlertHandler(object):
         except Exception as ex:
             Event(
                 ExceptionMessage(
-                    priority="error",
+                    priority="debug",
                     publisher="alerting",
                     payload={
                         "message": 'Failed to handle the alert of resource %s'
@@ -141,7 +141,7 @@ class AlertHandlerManager(gevent.greenlet.Greenlet):
         except (SyntaxError, ValueError, ImportError) as ex:
             Event(
                 ExceptionMessage(
-                    priority="error",
+                    priority="debug",
                     publisher="alerting",
                     payload={
                         "message": 'Alert handler init failed',
@@ -197,7 +197,7 @@ class AlertHandlerManager(gevent.greenlet.Greenlet):
         except Exception as ex:
             Event(
                 ExceptionMessage(
-                    priority="error",
+                    priority="debug",
                     publisher="alerting",
                     payload={
                         "message": "Exception caught starting alert handlers.",
