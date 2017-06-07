@@ -78,7 +78,7 @@ class EmailHandler(NotificationPlugin):
         except EtcdKeyNotFound as ex:
             Event(
                 ExceptionMessage(
-                    priority="error",
+                    priority="debug",
                     publisher="alerting",
                     payload={
                         "message": 'Exception trying to set alert'
@@ -132,7 +132,7 @@ class EmailHandler(NotificationPlugin):
         except NotificationDispatchError as ex:
             Event(
                 ExceptionMessage(
-                    priority="error",
+                    priority="debug",
                     publisher="alerting",
                     payload={
                         "message": 'Exception %s' % str(ex),
@@ -160,7 +160,7 @@ class EmailHandler(NotificationPlugin):
             except (smtplib.socket.gaierror, smtplib.SMTPException, Exception) as ex:
                 Event(
                     ExceptionMessage(
-                        priority="error",
+                        priority="debug",
                         publisher="alerting",
                         payload={
                             "message": 'Failed to fetch client for smtp'
@@ -185,7 +185,7 @@ class EmailHandler(NotificationPlugin):
             except (smtplib.socket.gaierror, smtplib.SMTPException) as ex:
                 Event(
                     ExceptionMessage(
-                        priority="error",
+                        priority="debug",
                         publisher="alerting",
                         payload={
                             "message": 'Failed to fetch client for smtp'
@@ -206,7 +206,7 @@ class EmailHandler(NotificationPlugin):
         except NotificationDispatchError as ex:
             Event(
                 ExceptionMessage(
-                    priority="error",
+                    priority="debug",
                     publisher="alerting",
                     payload={
                         "message": 'Exception caught attempting to set'
@@ -280,7 +280,7 @@ class EmailHandler(NotificationPlugin):
         ) as ex:
             Event(
                 ExceptionMessage(
-                    priority="error",
+                    priority="debug",
                     publisher="alerting",
                     payload={
                         "message": 'Exception caught attempting to email'

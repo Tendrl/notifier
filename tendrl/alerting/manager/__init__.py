@@ -26,7 +26,7 @@ class TendrlAlertingManager(object):
         except (AlertingError) as ex:
             Event(
                 ExceptionMessage(
-                    priority="error",
+                    priority="debug",
                     publisher="alerting",
                     payload={
                         "message": 'Error intializing alerting manager',
@@ -48,7 +48,7 @@ class TendrlAlertingManager(object):
         ) as ex:
             Event(
                 ExceptionMessage(
-                    priority="error",
+                    priority="debug",
                     publisher="alerting",
                     payload={
                         "message": 'Error starting alerting manager',
@@ -65,7 +65,7 @@ class TendrlAlertingManager(object):
         except Exception as ex:
             Event(
                 ExceptionMessage(
-                    priority="error",
+                    priority="debug",
                     publisher="alerting",
                     payload={
                         "message": 'Exception stopping alerting',
@@ -88,7 +88,7 @@ def main():
     def terminate(sig, frame):
         Event(
             Message(
-                "info",
+                "debug",
                 "alerting",
                 {
                     "message": 'Signal handler: stopping',
