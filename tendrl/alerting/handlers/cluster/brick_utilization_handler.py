@@ -15,7 +15,8 @@ class BrickUtilizationHandler(AlertHandler):
             'message' not in self.alert.tags and
             'cluster_name' not in self.alert.tags and
             'failure_max' not in self.alert.tags and
-            'warning_max' not in self.alert.tags
+            'warning_max' not in self.alert.tags and
+            'plugin_instance' not in self.alert.tags
         ):
             return
         vol_name, host_name, brick_path = self.alert.tags[
