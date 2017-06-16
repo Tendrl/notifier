@@ -42,6 +42,7 @@ install -Dm 0644 etc/tendrl/email_auth.conf.yaml.sample $RPM_BUILD_ROOT%{_syscon
 install -Dm 644 etc/tendrl/*.sample $RPM_BUILD_ROOT%{_datadir}/tendrl/alerting/.
 
 %post
+systemctl enable tendrl-alerting
 %systemd_post tendrl-alerting.service
 
 %preun
