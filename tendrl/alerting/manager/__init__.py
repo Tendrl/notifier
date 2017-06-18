@@ -83,7 +83,11 @@ def main():
     NS.alerting.definitions.save()
     NS.alerting.config.save()
     NS.publisher_id = "alerting"
-
+    
+    if NS.config.data.get("with_internal_profiling", False):
+        from tendrl.commons import profiler
+        profiler.start()
+        
     tendrl_alerting_manager = TendrlAlertingManager()
     tendrl_alerting_manager.start()
 
