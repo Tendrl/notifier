@@ -1,8 +1,7 @@
+import etcd
 import gevent
 from gevent.queue import Queue
 import signal
-from tendrl.alerting.exceptions import AlertingError
-from tendrl.alerting.notification.exceptions import NotificationDispatchError
 from tendrl.alerting.notification import NotificationPluginManager
 from tendrl.alerting.sync import TendrlAlertingSync
 from tendrl.alerting.watcher import AlertsWatchManager
@@ -24,7 +23,14 @@ class TendrlAlertingManager(object):
             NS.notification_plugin_manager = NotificationPluginManager()
             self.watch_manager = AlertsWatchManager()
             self.sync_thread = TendrlAlertingSync()
-        except (AlertingError) as ex:
+        except (
+            AttributeError,
+            SyntaxError,
+            ValueError,
+            KeyError,
+            ImportError,
+            etcd.EtcdException
+        ) as ex:
             Event(
                 ExceptionMessage(
                     priority="debug",
@@ -38,43 +44,13 @@ class TendrlAlertingManager(object):
             raise ex
 
     def start(self):
-        try:
-            self.alert_handler_manager.start()
-            self.sync_thread.start()
-            self.watch_manager.start()
-        except (
-            AlertingError,
-            NotificationDispatchError,
-            Exception
-        ) as ex:
-            Event(
-                ExceptionMessage(
-                    priority="debug",
-                    publisher="alerting",
-                    payload={
-                        "message": 'Error starting alerting manager',
-                        "exception": ex
-                    }
-                )
-            )
-            raise ex
+        self.alert_handler_manager.start()
+        self.sync_thread.start()
+        self.watch_manager.start()
 
     def stop(self):
-        try:
-            self.watch_manager.stop()
-            self.sync_thread.stop()
-        except Exception as ex:
-            Event(
-                ExceptionMessage(
-                    priority="debug",
-                    publisher="alerting",
-                    payload={
-                        "message": 'Exception stopping alerting',
-                        "exception": ex
-                    }
-                )
-            )
-            raise ex
+        self.watch_manager.stop()
+        self.sync_thread.stop()
 
 
 def main():
