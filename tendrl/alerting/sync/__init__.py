@@ -50,7 +50,7 @@ class TendrlAlertingSync(gevent.greenlet.Greenlet):
 
     def update_clusters_alert_count(self):
         try:
-            cluster_ids = central_store_util.get_cluster_ids()
+            integration_ids = central_store_util.get_integration_ids()
         except (EtcdException, AttributeError) as ex:
             logger.log(
                 "error",
@@ -63,17 +63,17 @@ class TendrlAlertingSync(gevent.greenlet.Greenlet):
                     ' Exception %s' % str(ex)
                 }
             )
-        for cluster_id in cluster_ids:
+        for integration_id in integration_ids:
             try:
                 crit_alerts, warn_alerts = parse_resource_alerts(
                     None,
                     alerting_consts.CLUSTER,
-                    cluster_id=cluster_id,
+                    integration_id=integration_id,
                 )
                 ClusterAlertCounters(
                     warn_count=len(warn_alerts),
                     crit_count=len(crit_alerts),
-                    cluster_id=cluster_id
+                    integration_id=integration_id
                 ).save(update=False)
             except (
                 EtcdException,

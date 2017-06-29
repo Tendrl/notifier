@@ -92,16 +92,16 @@ class AlertUtils(object):
                     alert2.tags['plugin_instance']
                 ):
                     return False
-        if 'cluster_id' in alert1.tags:
-            if 'cluster_id' in alert2.tags:
+        if 'integration_id' in alert1.tags:
+            if 'integration_id' in alert2.tags:
                 if (
-                    alert1.tags['cluster_id'] != alert2.tags['cluster_id']
+                    alert1.tags['integration_id'] != alert2.tags['integration_id']
                 ):
                     return False
             else:
                 return False
-        if 'cluster_id' not in alert1.tags:
-            if 'cluster_id' in alert2.tags:
+        if 'integration_id' not in alert1.tags:
+            if 'integration_id' in alert2.tags:
                 return False
             if alert1.node_id != alert2.node_id:
                 return False

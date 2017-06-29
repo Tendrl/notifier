@@ -52,7 +52,7 @@ class EmailHandler(NotificationPlugin):
             'clusters': {
                 'detail': '* to receive all alerts or list of clusters'
                           'Not required for admin user(is_admin: True)',
-                'type': "String(for '*') or List of cluster-ids"
+                'type': "String(for '*') or List of integration_ids"
             }
         }
         return config_help

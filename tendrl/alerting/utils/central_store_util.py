@@ -65,15 +65,15 @@ def get_node_ids():
         raise ex
 
 
-def get_cluster_ids():
+def get_integration_ids():
     try:
-        cluster_ids = []
+        integration_ids = []
         clusters_etcd = read_key('/clusters')
         for cluster in clusters_etcd.leaves:
             cluster_key_contents = cluster.key.split('/')
             if len(cluster_key_contents) == 3:
-                cluster_ids.append(cluster_key_contents[2])
-        return cluster_ids
+                integration_ids.append(cluster_key_contents[2])
+        return integration_ids
     except EtcdKeyNotFound:
         return []
     except (
@@ -131,7 +131,7 @@ def get_entity_alert_path(entity_type, **kwargs):
     # from definitions instead of hard coding here and if that works
     # Implement it in all other above functions where etcd path is hardcoded.
     entity_alert_path_map = {
-        alerting_consts.CLUSTER: '/alerting/clusters/$cluster_id',
+        alerting_consts.CLUSTER: '/alerting/clusters/$integration_id',
         alerting_consts.NODE: '/alerting/nodes/$node_id'
     }
     return Template(
