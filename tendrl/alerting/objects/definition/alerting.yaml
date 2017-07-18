@@ -151,8 +151,8 @@ namespace.alerting:
           help: 'The process raising the alert'
           type: String
       enabled: true
-      value: alerting/clusters/$Alert.tags['cluster_id']/$Alert.alert_id
-      list: alerting/clusters/$Alert.tags['cluster_id']
+      value: alerting/clusters/$Alert.tags['integration_id']/$Alert.alert_id
+      list: alerting/clusters/$Alert.tags['integration_id']
       help: "Cluster alerts"
     NotificationMedia:
       attrs:
@@ -189,7 +189,7 @@ namespace.alerting:
         critical_count:
           help: "Count of critical alerts for the cluster"
           type: int
-        cluster_id:
+        integration_id:
           help: "Id of the cluster"
           type: String
       value: /clusters/{0}/alert_counters
@@ -204,7 +204,7 @@ namespace.alerting:
         critical_count:
           help: "Count of critical alerts for the node"
           type: int
-        cluster_id:
+        integration_id:
           help: "Id of the node"
           type: String
       value: /nodes/{0}/alert_counters

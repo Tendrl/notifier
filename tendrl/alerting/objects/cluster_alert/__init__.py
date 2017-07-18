@@ -46,7 +46,7 @@ class ClusterAlert(Alert, objects.BaseObject):
         self.value = 'alerting/clusters/{0}/{1}'
 
     def render(self):
-        self.value = self.value.format(self.tags['cluster_id'],
+        self.value = self.value.format(self.tags['integration_id'],
                                        self.alert_id
                                        )
         return super(ClusterAlert, self).render()
