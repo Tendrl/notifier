@@ -1,11 +1,10 @@
-from etcd import EtcdConnectionFailed
+from etcd import EtcdException
 from etcd import EtcdKeyNotFound
-from etcd import EtcdNotDir
 import smtplib
 from socket import error
 from tendrl.alerting.handlers import AlertHandler
-from tendrl.alerting.notification.exceptions import NotificationDispatchError
 from tendrl.alerting.notification import NotificationPlugin
+import tendrl.alerting.utils.central_store_util as central_store_util
 from tendrl.commons.config import load_config
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
@@ -53,7 +52,7 @@ class EmailHandler(NotificationPlugin):
             'clusters': {
                 'detail': '* to receive all alerts or list of clusters'
                           'Not required for admin user(is_admin: True)',
-                'type': "String(for '*') or List of cluster-ids"
+                'type': "String(for '*') or List of integration_ids"
             }
         }
         return config_help
@@ -64,38 +63,24 @@ class EmailHandler(NotificationPlugin):
         # underneath needs to be enhanced for that.
         user_configs = []
         try:
-            users = NS._int.client.read('/_tendrl/users')
+            users = central_store_util.read_key('/_tendrl/users')
             for user in users.leaves:
                 user_key = user.key
                 try:
-                    user_email = NS._int.client.read(
+                    user_email = central_store_util.read_key(
                         "%s/email" % user_key
                     ).value
                     user_configs.append(user_email)
                 except EtcdKeyNotFound:
                     continue
             self.user_configs = user_configs
-        except EtcdKeyNotFound as ex:
-            Event(
-                ExceptionMessage(
-                    priority="debug",
-                    publisher="alerting",
-                    payload={
-                        "message": 'Exception trying to set alert'
-                        'destinations',
-                        "exception": ex
-                    }
-                )
-            )
-            raise NotificationDispatchError(str(ex))
         except (
-            EtcdConnectionFailed,
-            EtcdNotDir,
+            EtcdException,
             ValueError,
             KeyError,
             SyntaxError
         ) as ex:
-            raise NotificationDispatchError(str(ex))
+            raise ex
 
     def format_message(self, alert):
         return "Subject: [Alert] %s, %s threshold breached\n\n%s" % (
@@ -121,32 +106,15 @@ class EmailHandler(NotificationPlugin):
 
     def __init__(self):
         self.name = 'email'
-        try:
-            self.admin_config = load_config(
-                'alerting',
-                '/etc/tendrl/alerting/email.conf.yaml'
-            )
-            if not self.admin_config.get('auth'):
-                self.admin_config['auth'] = ''
-            self.user_configs = []
-        except NotificationDispatchError as ex:
-            Event(
-                ExceptionMessage(
-                    priority="debug",
-                    publisher="alerting",
-                    payload={
-                        "message": 'Exception %s' % str(ex),
-                    }
-                )
-            )
-            raise NotificationDispatchError(str(ex))
+        self.admin_config = load_config(
+            'alerting',
+            '/etc/tendrl/alerting/email.conf.yaml'
+        )
+        if not self.admin_config.get('auth'):
+            self.admin_config['auth'] = ''
+        self.user_configs = []
 
     def get_mail_client(self):
-        if not self.admin_config:
-            raise NotificationDispatchError(
-                "Admin mail configuration is required for dispatching email"
-                " notification"
-            )
         if (
             self.admin_config.get('auth') is not None and
             self.admin_config['auth'] == SSL_AUTHENTICATION
@@ -157,7 +125,10 @@ class EmailHandler(NotificationPlugin):
                     int(self.admin_config['email_smtp_port'])
                 )
                 return server
-            except (smtplib.socket.gaierror, smtplib.SMTPException, Exception) as ex:
+            except (
+                smtplib.socket.gaierror,
+                smtplib.SMTPException
+            ) as ex:
                 Event(
                     ExceptionMessage(
                         priority="debug",
@@ -172,7 +143,7 @@ class EmailHandler(NotificationPlugin):
                         }
                     )
                 )
-                raise NotificationDispatchError(str(ex))
+                raise ex
         else:
             try:
                 server = smtplib.SMTP(
@@ -197,13 +168,19 @@ class EmailHandler(NotificationPlugin):
                         }
                     )
                 )
-                raise NotificationDispatchError(str(ex))
+                raise ex
 
     def dispatch_notification(self, alert):
         server = None
         try:
             self.set_destinations()
-        except NotificationDispatchError as ex:
+        except (
+            AttributeError,
+            EtcdException,
+            ValueError,
+            KeyError,
+            SyntaxError
+        ) as ex:
             Event(
                 ExceptionMessage(
                     priority="debug",
@@ -218,12 +195,10 @@ class EmailHandler(NotificationPlugin):
             return
         try:
             msg = self.format_message(alert)
-            server = self.get_mail_client()
-            server.ehlo()
             if not self.admin_config:
                 Event(
                     Message(
-                        "error",
+                        "debug",
                         "alerting",
                         {
                             "message": 'Detected alert %s.'
@@ -233,6 +208,8 @@ class EmailHandler(NotificationPlugin):
                     )
                 )
                 return
+            server = self.get_mail_client()
+            server.ehlo()
             if self.admin_config['auth'] != "":
                 server.login(
                     self.admin_config['email_id'],
@@ -270,7 +247,6 @@ class EmailHandler(NotificationPlugin):
                 )
             )
         except (
-            NotificationDispatchError,
             error,
             smtplib.SMTPException,
             smtplib.SMTPAuthenticationError,

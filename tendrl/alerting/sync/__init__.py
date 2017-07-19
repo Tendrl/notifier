@@ -1,7 +1,7 @@
+from etcd import EtcdException
 import gevent
 import gevent.event
 import tendrl.alerting.constants as alerting_consts
-from tendrl.alerting.exceptions import AlertingError
 import tendrl.alerting.utils.central_store_util as central_store_util
 from tendrl.alerting.objects.cluster_alert_counters import ClusterAlertCounters
 from tendrl.alerting.objects.node_alert_counters import NodeAlertCounters
@@ -28,7 +28,13 @@ class TendrlAlertingSync(gevent.greenlet.Greenlet):
                     crit_count=len(crit_alerts),
                     node_id=node_id
                 ).save(update=False)
-            except AlertingError as ex:
+            except (
+                AttributeError,
+                EtcdException,
+                ValueError,
+                SyntaxError,
+                TypeError
+            ) as ex:
                 logger.log(
                     "error",
                     NS.get(
@@ -43,20 +49,40 @@ class TendrlAlertingSync(gevent.greenlet.Greenlet):
                 continue
 
     def update_clusters_alert_count(self):
-        cluster_ids = central_store_util.get_cluster_ids()
-        for cluster_id in cluster_ids:
+        try:
+            integration_ids = central_store_util.get_integration_ids()
+        except (EtcdException, AttributeError) as ex:
+            logger.log(
+                "error",
+                NS.get(
+                    "publisher_id",
+                    None
+                ),
+                {
+                    "message": 'Failed to update cluster alert counter.'
+                    ' Exception %s' % str(ex)
+                }
+            )
+        for integration_id in integration_ids:
             try:
                 crit_alerts, warn_alerts = parse_resource_alerts(
                     None,
                     alerting_consts.CLUSTER,
-                    cluster_id=cluster_id,
+                    integration_id=integration_id,
                 )
                 ClusterAlertCounters(
                     warn_count=len(warn_alerts),
                     crit_count=len(crit_alerts),
-                    cluster_id=cluster_id
+                    integration_id=integration_id
                 ).save(update=False)
-            except AlertingError as ex:
+            except (
+                EtcdException,
+                AttributeError,
+                KeyError,
+                TypeError,
+                ValueError,
+                SyntaxError
+            ) as ex:
                 logger.log(
                     "error",
                     NS.get(

@@ -1,4 +1,5 @@
 from etcd import EtcdKeyNotFound
+from etcd import EtcdException
 import gevent
 import tendrl.alerting.utils.central_store_util as central_store_util
 from tendrl.commons.event import Event
@@ -22,7 +23,7 @@ class AlertsWatchManager(gevent.greenlet.Greenlet):
                         NS.alert_queue.put(event_id)
             except EtcdKeyNotFound:
                 continue
-            except Exception as ex:
+            except (EtcdException, AttributeError) as ex:
                 Event(
                     ExceptionMessage(
                         priority="debug",
@@ -33,7 +34,6 @@ class AlertsWatchManager(gevent.greenlet.Greenlet):
                         }
                     )
                 )
-                raise ex
 
     def stop(self):
         self.complete.set()

@@ -3,8 +3,6 @@ import etcd
 import importlib
 import os
 import six
-from tendrl.alerting.exceptions import AlertingError
-from tendrl.alerting.notification.exceptions import NotificationPluginError
 from tendrl.alerting.objects.notification_media import NotificationMedia
 from tendrl.alerting.objects.notification_config import NotificationConfig
 from tendrl.alerting.utils.util import list_modules_in_package_path
@@ -73,7 +71,7 @@ class NotificationPluginManager(object):
                     }
                 )
             )
-            raise NotificationPluginError(str(ex))
+            raise ex
 
     def save_alertnotificationconfig(self):
         notification_config = {}
@@ -96,13 +94,12 @@ class NotificationPluginManager(object):
             ).save()
             self.save_alertnotificationconfig()
         except (
+            AttributeError,
             SyntaxError,
             ValueError,
             KeyError,
-            etcd.EtcdKeyNotFound,
-            etcd.EtcdConnectionFailed,
-            etcd.EtcdException,
-            NotificationPluginError
+            ImportError,
+            etcd.EtcdException
         ) as ex:
             Event(
                 ExceptionMessage(
@@ -115,7 +112,7 @@ class NotificationPluginManager(object):
                     }
                 )
             )
-            raise AlertingError(str(ex))
+            raise ex
 
     def notify_alert(self, alert):
         # TODO: Revert to object#load method of loading objects once loading of

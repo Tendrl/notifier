@@ -73,7 +73,7 @@ class AlertHandler(object):
             try:
                 self.alert.save()
                 self.classify_alert()
-            except Exception as ex:
+            except (etcd.EtcdException, AttributeError) as ex:
                 Event(
                     ExceptionMessage(
                         priority="debug",
@@ -84,7 +84,7 @@ class AlertHandler(object):
                         }
                     )
                 )
-        except (etcd.EtcdConnectionFailed, Exception) as ex:
+        except (etcd.EtcdException, KeyError, AttributeError) as ex:
             Event(
                 ExceptionMessage(
                     priority="debug",
@@ -104,25 +104,9 @@ class AlertHandler(object):
         pass
 
     def handle(self, alert_obj):
-        try:
-            self.alert = alert_obj
-            self.alert.significance = constants.SIGNIFICANCE_HIGH
-            self.update_alert()
-        except Exception as ex:
-            Event(
-                ExceptionMessage(
-                    priority="debug",
-                    publisher="alerting",
-                    payload={
-                        "message": 'Failed to handle the alert of resource %s'
-                        ' for node %s' % (
-                            alert_obj.resource,
-                            alert_obj.node_id,
-                        ),
-                        "exception": ex
-                    }
-                )
-            )
+        self.alert = alert_obj
+        self.alert.significance = constants.SIGNIFICANCE_HIGH
+        self.update_alert()
 
 
 class AlertHandlerManager(gevent.greenlet.Greenlet):
@@ -139,23 +123,10 @@ class AlertHandlerManager(gevent.greenlet.Greenlet):
 
     def __init__(self):
         super(AlertHandlerManager, self).__init__()
-        try:
-            self.alert_handlers = []
-            self.complete = gevent.event.Event()
-            self.load_handlers()
-            self.init_alerttypes()
-        except (SyntaxError, ValueError, ImportError) as ex:
-            Event(
-                ExceptionMessage(
-                    priority="debug",
-                    publisher="alerting",
-                    payload={
-                        "message": 'Alert handler init failed',
-                        "exception": ex
-                    }
-                )
-            )
-            raise ex
+        self.alert_handlers = []
+        self.complete = gevent.event.Event()
+        self.load_handlers()
+        self.init_alerttypes()
 
     def init_alerttypes(self):
         for handler in AlertHandler.handlers:
@@ -166,11 +137,11 @@ class AlertHandlerManager(gevent.greenlet.Greenlet):
             try:
                 new_msg_id = NS.alert_queue.get()
                 gevent.sleep(15)
-                msg_priority = NS._int.client.read(
+                msg_priority = central_store_util.read_key(
                     '/messages/events/%s/priority' % new_msg_id
                 ).value
                 if msg_priority == 'notice':
-                    new_alert_str = NS._int.client.read(
+                    new_alert_str = central_store_util.read_key(
                         '/messages/events/%s/payload' % new_msg_id,
                         recursive=True
                     ).leaves.next().value
@@ -203,7 +174,12 @@ class AlertHandlerManager(gevent.greenlet.Greenlet):
                                 str(new_alert)
                             )
                         )
-            except Exception as ex:
+            except (
+                ValueError,
+                KeyError,
+                etcd.EtcdException,
+                NoHandlerException
+            ) as ex:
                 Event(
                     ExceptionMessage(
                         priority="debug",
