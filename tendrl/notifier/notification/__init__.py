@@ -113,7 +113,7 @@ class NotificationPluginManager(gevent.greenlet.Greenlet):
                 alerts = get_alerts()
                 gevent.sleep(30)
                 for alert in alerts:
-                    if not eval(alert.delivery):
+                    if alert.delivery == "False":
                         for plugin in NotificationPlugin.plugins:
                             plugin.dispatch_notification(alert)
                         update_alert_delivery(alert)

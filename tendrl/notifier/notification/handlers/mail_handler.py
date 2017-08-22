@@ -7,8 +7,8 @@ from tendrl.commons.config import load_config
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
 from tendrl.commons.utils.log_utils import log
+from tendrl.commons.utils import etcd_utils
 from tendrl.notifier.notification import NotificationPlugin
-from tendrl.notifier.utils import central_store_util
 
 SSL_AUTHENTICATION = 'ssl'
 TLS_AUTHENTICATION = 'tls'
@@ -62,10 +62,10 @@ class EmailHandler(NotificationPlugin):
         # email notification, for now it is come from users path
         user_ids = []
         try:
-            users = central_store_util.read_key('/_tendrl/users')
+            users = etcd_utils.read('/_tendrl/users')
             for user in users.leaves:
                 try:
-                    email_notifications = central_store_util.read_key(
+                    email_notifications = etcd_utils.read(
                         "%s/email_notifications" % user.key
                     ).value
                     if email_notifications == "true":
@@ -88,7 +88,7 @@ class EmailHandler(NotificationPlugin):
         try:
             for user_id in user_ids:
                 try:
-                    user_email = central_store_util.read_key(
+                    user_email = etcd_utils.read(
                         "_tendrl/users/%s/email" % user_id
                     ).value
                     user_configs.append(user_email)
