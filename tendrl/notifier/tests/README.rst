@@ -4,14 +4,14 @@ Status
 Builds
 ------
 
-.. image:: https://travis-ci.org/Tendrl/node-agent.svg?branch=master
-    :target: https://travis-ci.org/Tendrl/node-agent
+.. image:: https://travis-ci.org/Tendrl/notifier.svg?branch=master
+    :target: https://travis-ci.org/Tendrl/notifier
 
 Code Coverage
 -------------
 
 .. image:: https://coveralls.io/repos/github/Tendrl/node-agent/badge.svg?branch=master
-    :target: https://coveralls.io/github/Tendrl/node-agent?branch=master
+    :target: https://coveralls.io/github/Tendrl/notifier?branch=master
 
 
 Testing

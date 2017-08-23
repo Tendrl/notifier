@@ -58,7 +58,7 @@ class EmailHandler(NotificationPlugin):
         return config_help
 
     def set_destinations(self):
-        # TODO(gowtham):Get user ids from indexes who enabled
+        # TODO(gowtham):Get user ids from indexes for whom enabled
         # email notification, for now it is come from users path
         user_ids = []
         try:
@@ -81,8 +81,8 @@ class EmailHandler(NotificationPlugin):
         ) as ex:
             raise ex
 
-    def get_alert_destinations(self, user_ids):
-        # TODO(gowtham): get user emailds only who have enabled
+    def populate_alert_destinations(self, user_ids):
+        # TODO(gowtham): get user emails only who have enabled
         # email notfication
         user_configs = []
         try:
@@ -177,7 +177,7 @@ class EmailHandler(NotificationPlugin):
         server = None
         try:
             user_ids = self.set_destinations()
-            self.get_alert_destinations(user_ids)
+            self.populate_alert_destinations(user_ids)
             if (
                 not self.user_configs or
                 len(self.user_configs) == 0

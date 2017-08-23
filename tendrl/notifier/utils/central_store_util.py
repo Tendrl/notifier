@@ -31,7 +31,7 @@ def get_alerts():
 
 
 def update_alert_delivery(alert):
-    alert.delivery = "True"
+    alert.delivered = "True"
     # update alert
     alert.save()
     if "alert_catagory" in alert.tags:
@@ -43,7 +43,7 @@ def update_alert_delivery(alert):
                     alert.alert_id
                 )
             )
-            cluster_alert['delivery'] = alert.delivery
+            cluster_alert['delivered'] = alert.delivered
             ClusterAlert(**cluster_alert).save()
         elif alert.tags['alert_catagory'] == 'node':
             # node alert
@@ -53,5 +53,5 @@ def update_alert_delivery(alert):
                     alert.alert_id
                 )
             )
-            node_alert['delivery'] = alert.delivery
+            node_alert['delivered'] = alert.delivered
             NodeAlert(**node_alert).save()
