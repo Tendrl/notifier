@@ -6,8 +6,8 @@ from socket import error
 from tendrl.commons.config import load_config
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
-from tendrl.commons.utils.log_utils import log
 from tendrl.commons.utils import etcd_utils
+from tendrl.commons.utils.log_utils import log
 from tendrl.notifier.notification import NotificationPlugin
 
 SSL_AUTHENTICATION = 'ssl'

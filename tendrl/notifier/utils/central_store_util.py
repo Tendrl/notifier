@@ -1,5 +1,3 @@
-from etcd import EtcdException
-from etcd import EtcdKeyNotFound
 from tendrl.commons.objects.alert import Alert
 from tendrl.commons.objects.cluster_alert import ClusterAlert
 from tendrl.commons.objects.node_alert import NodeAlert
