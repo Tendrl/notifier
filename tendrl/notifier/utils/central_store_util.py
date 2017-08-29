@@ -32,24 +32,23 @@ def update_alert_delivery(alert):
     alert.delivered = "True"
     # update alert
     alert.save()
-    if "alert_catagory" in alert.tags:
-        if alert.tags['alert_catagory'] == 'cluster':
-            # cluster alert
-            cluster_alert = read(
-                "/alerting/clusters/%s/%s" % (
-                    alert.tags['integration_id'],
-                    alert.alert_id
-                )
+    if alert.classification == 'cluster':
+        # cluster alert
+        cluster_alert = read(
+            "/alerting/clusters/%s/%s" % (
+                alert.tags['integration_id'],
+                alert.alert_id
             )
-            cluster_alert['delivered'] = alert.delivered
-            ClusterAlert(**cluster_alert).save()
-        elif alert.tags['alert_catagory'] == 'node':
-            # node alert
-            node_alert = read(
-                "/alerting/nodes/%s/%s" % (
-                    alert.node_id,
-                    alert.alert_id
-                )
+        )
+        cluster_alert['delivered'] = alert.delivered
+        ClusterAlert(**cluster_alert).save()
+    elif alert.classification == 'node':
+        # node alert
+        node_alert = read(
+            "/alerting/nodes/%s/%s" % (
+                alert.node_id,
+                alert.alert_id
             )
-            node_alert['delivered'] = alert.delivered
-            NodeAlert(**node_alert).save()
+        )
+        node_alert['delivered'] = alert.delivered
+        NodeAlert(**node_alert).save()
