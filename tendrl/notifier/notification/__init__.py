@@ -110,7 +110,10 @@ class NotificationPluginManager(gevent.greenlet.Greenlet):
     def _run(self):
         while not self.complete.is_set():
             try:
-                gevent.sleep(30)
+                interval = int(
+                    NS.config.data["notification_check_interval"]
+                )
+                gevent.sleep(interval)
                 alerts = get_alerts()
                 for alert in alerts:
                     if alert.delivered == "False":

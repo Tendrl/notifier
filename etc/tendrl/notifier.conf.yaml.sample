@@ -6,6 +6,7 @@ etcd_connection: 0.0.0.0
 log_cfg_path: /etc/tendrl/notifier/notifier_logging.yaml
 log_level: DEBUG
 logging_socket_path: /var/run/tendrl/message.sock
+notification_check_interval: 30
 with_internal_profiling: False
 tags:
 - tendrl/notifier
