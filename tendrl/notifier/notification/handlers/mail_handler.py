@@ -57,7 +57,7 @@ class EmailHandler(NotificationPlugin):
         }
         return config_help
 
-    def set_destinations(self):
+    def get_user_ids(self):
         # TODO(gowtham):Get user ids from indexes for whom enabled
         # email notification, for now it is come from users path
         user_ids = []
@@ -176,7 +176,7 @@ class EmailHandler(NotificationPlugin):
     def dispatch_notification(self, alert):
         server = None
         try:
-            user_ids = self.set_destinations()
+            user_ids = self.get_user_ids()
             self.populate_alert_destinations(user_ids)
             if (
                 not self.user_configs or

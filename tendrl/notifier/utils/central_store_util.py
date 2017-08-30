@@ -3,13 +3,15 @@ from tendrl.commons.objects.cluster_alert import ClusterAlert
 from tendrl.commons.objects.node_alert import NodeAlert
 from tendrl.commons.utils import etcd_utils
 
+CLUSTER_ALERT = "cluster"
+NODE_ALERT = "node"
 
 def read(key):
     result = {}
-    job = {}
-    job = etcd_utils.read(key)
-    if hasattr(job, 'leaves'):
-        for item in job.leaves:
+    obj = {}
+    obj = etcd_utils.read(key)
+    if hasattr(obj, 'leaves'):
+        for item in obj.leaves:
             if key == item.key:
                 result[item.key.split("/")[-1]] = item.value
                 return result
@@ -32,7 +34,7 @@ def update_alert_delivery(alert):
     alert.delivered = "True"
     # update alert
     alert.save()
-    if alert.classification == 'cluster':
+    if alert.classification == CLUSTER_ALERT:
         # cluster alert
         cluster_alert = read(
             "/alerting/clusters/%s/%s" % (
@@ -42,7 +44,7 @@ def update_alert_delivery(alert):
         )
         cluster_alert['delivered'] = alert.delivered
         ClusterAlert(**cluster_alert).save()
-    elif alert.classification == 'node':
+    elif alert.classification == NODE_ALERT:
         # node alert
         node_alert = read(
             "/alerting/nodes/%s/%s" % (
