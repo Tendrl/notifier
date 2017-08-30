@@ -2,7 +2,6 @@ import etcd
 import gevent
 import signal
 
-from gevent.queue import Queue
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
 from tendrl.commons import TendrlNS
@@ -14,7 +13,6 @@ from tendrl.notifier import NotifierNS
 class TendrlNotifierManager(object):
     def __init__(self):
         try:
-            NS.notification_queue = Queue()
             self.notification_plugin_manager = NotificationPluginManager()
         except (
             AttributeError,
