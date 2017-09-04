@@ -26,7 +26,8 @@ def get_alerts():
     alerts_arr = []
     alerts = read('/alerting/alerts')
     for alert_id, alert in alerts.iteritems():
-        alerts_arr.append(Alert(**alert))
+        if alert:
+            alerts_arr.append(Alert(**alert))
     return alerts_arr
 
 
