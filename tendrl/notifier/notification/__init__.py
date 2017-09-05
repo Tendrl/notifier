@@ -2,6 +2,7 @@ from abc import abstractmethod
 import etcd
 import gevent.event
 import importlib
+import json
 import os
 import six
 
@@ -116,6 +117,7 @@ class NotificationPluginManager(gevent.greenlet.Greenlet):
                 gevent.sleep(interval)
                 alerts = get_alerts()
                 for alert in alerts:
+                    alert.tags = json.loads(alert.tags)
                     if alert.delivered == "False":
                         for plugin in NotificationPlugin.plugins:
                             plugin.dispatch_notification(alert)
