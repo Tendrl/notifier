@@ -1,5 +1,5 @@
 Name: tendrl-notifier
-Version: 1.4.2
+Version: 1.5.1
 Release: 1%{?dist}
 BuildArch: noarch
 Summary: Module for Tendrl Notifier
@@ -7,7 +7,6 @@ Source0: %{name}-%{version}.tar.gz
 License: LGPLv2+
 URL: https://github.com/Tendrl/Notifier
 
-BuildRequires: python-gevent
 BuildRequires: pytest
 BuildRequires: systemd
 BuildRequires: python-mock
@@ -64,3 +63,7 @@ py.test -v tendrl/notifier/tests || :
 %{_sysconfdir}/tendrl/notifier/email.conf.yaml
 %{_sysconfdir}/tendrl/notifier/email_auth.conf.yaml.sample
 %{_unitdir}/tendrl-notifier.service
+
+%changelog
+* Fri Sep 08 2017 Rohan Kanade <rkanade@redhat.com> - 1.5.1-1
+- Release tendrl-notifier v1.5.1
