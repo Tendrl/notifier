@@ -57,51 +57,37 @@ class EmailHandler(NotificationPlugin):
         }
         return config_help
 
-    def get_user_ids(self):
+    def set_destinations(self):
         # TODO(gowtham):Get user ids from indexes for whom enabled
         # email notification, for now it is come from users path
-        user_ids = []
         try:
+            all_users = []
             users = etcd_utils.read('/_tendrl/users')
             for user in users.leaves:
-                try:
-                    email_notifications = etcd_utils.read(
-                        "%s/email_notifications" % user.key
-                    ).value
-                    if email_notifications == "true":
-                        user_ids.append(user.key.split("/")[-1])
-                except EtcdKeyNotFound:
-                    continue
-            return user_ids
+                user = NS._int.wclient.read(
+                    user.key, recursive=True
+                )
+                user_info = {}
+                for item in user.leaves:
+                    user_info[item.key.split("/")[-1]] = item.value
+                all_users.append(user_info)
+            self.user_configs = all_users
         except (
             EtcdException,
+            EtcdKeyNotFound,
             ValueError,
             KeyError,
             SyntaxError
         ) as ex:
             raise ex
 
-    def populate_alert_destinations(self, user_ids):
-        # TODO(gowtham): get user emails only who have enabled
-        # email notfication
-        user_configs = []
-        try:
-            for user_id in user_ids:
-                try:
-                    user_email = etcd_utils.read(
-                        "_tendrl/users/%s/email" % user_id
-                    ).value
-                    user_configs.append(user_email)
-                except EtcdKeyNotFound:
-                    continue
-            self.user_configs = user_configs
-        except (
-            EtcdException,
-            ValueError,
-            KeyError,
-            SyntaxError
-        ) as ex:
-            raise ex
+    def get_alert_destinations(self):
+        email_ids = []
+        for user in self.user_configs:
+            if "email_notifications" in user:
+                if user['email_notifications'] == 'true':
+                    email_ids.append(user["email"])
+        return email_ids
 
     def format_message(self, alert):
         return "Subject: [Alert] %s, %s threshold breached\n\n%s" % (
@@ -176,8 +162,8 @@ class EmailHandler(NotificationPlugin):
     def dispatch_notification(self, alert):
         server = None
         try:
-            user_ids = self.get_user_ids()
-            self.populate_alert_destinations(user_ids)
+            self.set_destinations()
+            self.user_configs = self.get_alert_destinations()
             if (
                 not self.user_configs or
                 len(self.user_configs) == 0
