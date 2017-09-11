@@ -176,6 +176,7 @@ class EmailHandler(NotificationPlugin):
                         'alert notification'
                     }
                 )
+                return
         except (
             AttributeError,
             EtcdException,
