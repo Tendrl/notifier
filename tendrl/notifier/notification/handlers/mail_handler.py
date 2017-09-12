@@ -58,20 +58,9 @@ class EmailHandler(NotificationPlugin):
         return config_help
 
     def set_destinations(self):
-        # TODO(gowtham):Get user ids from indexes for whom enabled
-        # email notification, for now it is come from users path
         try:
-            all_users = []
-            users = etcd_utils.read('/_tendrl/users')
-            for user in users.leaves:
-                user = NS._int.wclient.read(
-                    user.key, recursive=True
-                )
-                user_info = {}
-                for item in user.leaves:
-                    user_info[item.key.split("/")[-1]] = item.value
-                all_users.append(user_info)
-            self.user_configs = all_users
+            key = "_tendrl/indexes/notifications/email_notifications"
+            self.user_configs = self.get_alert_destinations(key)
         except (
             EtcdException,
             EtcdKeyNotFound,
@@ -79,14 +68,19 @@ class EmailHandler(NotificationPlugin):
             KeyError,
             SyntaxError
         ) as ex:
+            if type(ex) != EtcdKeyNotFound:
+                self.user_configs = []
+                return
             raise ex
 
-    def get_alert_destinations(self):
+    def get_alert_destinations(self, key):
         email_ids = []
-        for user in self.user_configs:
-            if "email_notifications" in user:
-                if user['email_notifications'] == 'true':
-                    email_ids.append(user["email"])
+        email_notifications = etcd_utils.read(key)
+        for email_notification in email_notifications.leaves:
+            email = NS._int.wclient.read(
+                email_notification.key
+            ).value
+            email_ids.append(email)
         return email_ids
 
     def format_message(self, alert):
@@ -163,7 +157,6 @@ class EmailHandler(NotificationPlugin):
         server = None
         try:
             self.set_destinations()
-            self.user_configs = self.get_alert_destinations()
             if (
                 not self.user_configs or
                 len(self.user_configs) == 0
