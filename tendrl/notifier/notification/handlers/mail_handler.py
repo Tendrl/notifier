@@ -124,7 +124,7 @@ class EmailHandler(NotificationPlugin):
                 Event(
                     ExceptionMessage(
                         priority="debug",
-                        publisher="alerting",
+                        publisher="notifier",
                         payload={
                             "message": 'Failed to fetch client for smtp'
                             '  server %s and smtp port %s' % (
@@ -149,7 +149,7 @@ class EmailHandler(NotificationPlugin):
                 Event(
                     ExceptionMessage(
                         priority="debug",
-                        publisher="alerting",
+                        publisher="notifier",
                         payload={
                             "message": 'Failed to fetch client for smtp'
                             '  server %s and smtp port %s' % (
@@ -172,7 +172,7 @@ class EmailHandler(NotificationPlugin):
             ):
                 log(
                     "error",
-                    "alerting",
+                    "notifier",
                     {
                         "message": 'No destinations configured to send'
                         'alert notification'
@@ -189,7 +189,7 @@ class EmailHandler(NotificationPlugin):
             Event(
                 ExceptionMessage(
                     priority="debug",
-                    publisher="alerting",
+                    publisher="notifier",
                     payload={
                         "message": 'Exception caught attempting to set'
                         ' %s email destinations' % str(alert.tags),
@@ -203,7 +203,7 @@ class EmailHandler(NotificationPlugin):
             if not self.admin_config:
                 log(
                     "debug",
-                    "alerting",
+                    "notifier",
                     {
                         "message": 'Detected alert %s.'
                         'But, admin config is a must to send'
@@ -225,7 +225,7 @@ class EmailHandler(NotificationPlugin):
             )
             log(
                 "debug",
-                "alerting",
+                "notifier",
                 {
                     "message": 'Sent mail to %s to alert about %s'
                     % (self.user_configs, msg)
@@ -242,7 +242,7 @@ class EmailHandler(NotificationPlugin):
             Event(
                 ExceptionMessage(
                     priority="debug",
-                    publisher="alerting",
+                    publisher="notifier",
                     payload={
                         "message": 'Exception caught attempting to email'
                         '%s' % msg,
