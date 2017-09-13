@@ -12,6 +12,8 @@ from tendrl.notifier.notification import NotificationPlugin
 
 SSL_AUTHENTICATION = 'ssl'
 TLS_AUTHENTICATION = 'tls'
+ALERT_TYPES = {0: "STATUS",
+               1: "UTILIZATION"}
 
 
 class EmailHandler(NotificationPlugin):
@@ -84,8 +86,15 @@ class EmailHandler(NotificationPlugin):
         return email_ids
 
     def format_message(self, alert):
-        return "Subject: [Alert] %s, %s threshold breached\n\n%s" % (
-            alert.resource, alert.severity, alert.tags['message'])
+        resource = alert.resource.replace("_", " ").title()
+        severity = alert.severity
+        message = alert.tags['message']
+        if alert.alert_type == ALERT_TYPES[0]:
+            suffix = "status changed"
+        elif alert.alert_type == ALERT_TYPES[1]:
+            suffix = "threshold breached"
+        return "Subject: [Tendrl Alert] %s, %s: %s\n\n%s" % (
+            resource, severity, suffix, message)
 
     def __init__(self):
         self.name = 'email'

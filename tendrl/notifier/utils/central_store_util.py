@@ -2,7 +2,8 @@ from etcd import EtcdException
 from etcd import EtcdKeyNotFound
 from tendrl.commons.objects.cluster_alert import ClusterAlert
 from tendrl.commons.objects.node_alert import NodeAlert
-from tendrl.commons.objects.notification_only_alert import NotificationOnlyAlert
+from tendrl.commons.objects.notification_only_alert import \
+    NotificationOnlyAlert
 
 CLUSTER_ALERT = "cluster"
 NODE_ALERT = "node"
@@ -12,7 +13,8 @@ def get_alerts():
     alerts_arr = []
     try:
         alerts_arr = NS.tendrl.objects.Alert().load_all()
-        notify_only_alerts = NS.tendrl.objects.NotificationOnlyAlert().load_all()
+        notify_only_alerts = \
+            NS.tendrl.objects.NotificationOnlyAlert().load_all()
         if notify_only_alerts and len(notify_only_alerts) > 0:
             alerts_arr.extend(notify_only_alerts)
     except EtcdKeyNotFound:
