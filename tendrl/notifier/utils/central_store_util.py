@@ -44,7 +44,7 @@ def update_alert_delivery(alert):
         alert.save()
     else:
         # After 10 mins it will deleted
-        TTL = 600
+        TTL = 1200
         obj = NotificationOnlyAlert(
             alert_id=alert.alert_id,
         ).load()
