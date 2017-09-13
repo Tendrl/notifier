@@ -12,9 +12,9 @@ def get_alerts():
     alerts_arr = []
     try:
         alerts_arr = NS.tendrl.objects.Alert().load_all()
-        alert_notify = NS.tendrl.objects.NotificationOnlyAlert().load_all()
-        if alert_notify and len(alert_notify) > 0:
-            alerts_arr.extend(alert_notify)
+        notify_only_alerts = NS.tendrl.objects.NotificationOnlyAlert().load_all()
+        if notify_only_alerts and len(notify_only_alerts) > 0:
+            alerts_arr.extend(notify_only_alerts)
     except EtcdKeyNotFound:
         return alerts_arr
     except (EtcdException, AttributeError) as ex:
