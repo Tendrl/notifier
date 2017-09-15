@@ -3,10 +3,12 @@
 etcd_port: 2379
 # Central store etcd host/ip
 etcd_connection: 0.0.0.0
-# Central store etcd username
-etcd_username: root
-# Central store etcd password
-etcd_password: replace_your_password_here
+
+# Enable etcd username/password based auth, disable if using CA Cert/Client cert based TLS auth options
+#etcd_username: root
+#etcd_password: replace_your_password_here
+
+
 log_cfg_path: /etc/tendrl/notifier/notifier_logging.yaml
 log_level: DEBUG
 logging_socket_path: /var/run/tendrl/message.sock
