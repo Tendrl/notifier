@@ -33,10 +33,10 @@ rm -rf html/.{doctrees,buildinfo}
 install -m  0755  --directory $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/notifier
 install -m  0755  --directory $RPM_BUILD_ROOT%{_datadir}/tendrl/notifier
 install -Dm 0644 tendrl-notifier.service $RPM_BUILD_ROOT%{_unitdir}/tendrl-notifier.service
-install -Dm 0644 etc/tendrl/notifier.conf.yaml.sample $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/notifier/notifier.conf.yaml
+install -Dm 0640 etc/tendrl/notifier.conf.yaml.sample $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/notifier/notifier.conf.yaml
 install -Dm 0644 etc/tendrl/notifier_logging.yaml.sample $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/notifier/notifier_logging.yaml
-install -Dm 0644 etc/tendrl/email.conf.yaml.sample $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/notifier/email.conf.yaml
-install -Dm 0644 etc/tendrl/email_auth.conf.yaml.sample $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/notifier/email_auth.conf.yaml.sample
+install -Dm 0640 etc/tendrl/email.conf.yaml.sample $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/notifier/email.conf.yaml
+install -Dm 0640 etc/tendrl/email_auth.conf.yaml.sample $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/notifier/email_auth.conf.yaml.sample
 install -Dm 644 etc/tendrl/*.sample $RPM_BUILD_ROOT%{_datadir}/tendrl/notifier/.
 
 %post
