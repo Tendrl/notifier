@@ -122,8 +122,9 @@ class NotificationPluginManager(threading.Thread):
                     alert.tags = json.loads(alert.tags)
                     if alert.delivered == "False":
                         for plugin in NotificationPlugin.plugins:
-                            plugin.dispatch_notification(alert)
-                        update_alert_delivery(alert)
+                            err = plugin.dispatch_notification(alert)
+                        if not err:
+                            update_alert_delivery(alert)
             except(
                 ValueError,
                 KeyError,
