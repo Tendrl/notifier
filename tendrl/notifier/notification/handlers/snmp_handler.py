@@ -1,7 +1,14 @@
 from etcd import EtcdException
 from etcd import EtcdKeyNotFound
 from pysnmp.error import PySnmpError
-from pysnmp.hlapi import *
+from pysnmp.hlapi import CommunityData
+from pysnmp.hlapi import ContextData
+from pysnmp.hlapi import ObjectIdentity
+from pysnmp.hlapi import ObjectType
+from pysnmp.hlapi import OctetString
+from pysnmp.hlapi import sendNotification
+from pysnmp.hlapi import SnmpEngine
+from pysnmp.hlapi import UdpTransportTarget
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
 from tendrl.commons.utils import etcd_utils
@@ -17,9 +24,7 @@ ALERT_TYPES = {0: "STATUS",
 
 
 class SnmpEndpoint(object):
-    """
-    Base class for SNMP endpoint (credential and host+port pair)
-    """
+    # Base class for SNMP endpoint (credential and host+port pair)
 
     def __init__(self, host="localhost", proto=0):
         self.proto = proto
@@ -29,9 +34,7 @@ class SnmpEndpoint(object):
 
 
 class V2Endpoint(SnmpEndpoint):
-    """
-    Class encapsulating an SNMPv2c community, host+port pair
-    """
+    # Class encapsulating an SNMPv2c community, host+port pair
     # 2 represent SNMPv2
     def __init__(self, host):
         super(V2Endpoint, self).__init__(host, 2)
@@ -88,9 +91,7 @@ class SnmpHandler(NotificationPlugin):
         return pdu
 
     def trapV2(self, endpoint, message):
-        """
-        Send trap to one endpoint
-        """
+        # Send trap to one endpoint
         errorIndication, errorStatus, errorIndex, varBinds = next(
             sendNotification(
                 SnmpEngine(snmpEngineID=OctetString(
@@ -110,7 +111,6 @@ class SnmpHandler(NotificationPlugin):
             self.trapV2(endpoint, message)
 
     def dispatch_notification(self, alert):
-        server = None
         try:
             self.set_destinations()
             if (
