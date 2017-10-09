@@ -102,7 +102,7 @@ class SnmpHandler(NotificationPlugin):
 
     def get_pdu(self, message):
         # Properties of the managed object within the device are
-        # arranged in this MIB tree structure. the complete path from the 
+        # arranged in this MIB tree structure. the complete path from the
         # top of the tree is ODI
         # Iso(1).org(3).dod(6).internet(1).private(4).2312.19.1.1
         pdu = [
@@ -246,8 +246,8 @@ class SnmpHandler(NotificationPlugin):
                     priority="debug",
                     publisher="notifier",
                     payload={
-                        "message": 'Exception caught attempting to email'
-                        '%s' % msg,
+                        "message": 'Exception caught attempting to snmp'
+                        'notification %s' % msg,
                         "exception": ex
                     }
                 )

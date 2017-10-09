@@ -197,7 +197,7 @@ class EmailHandler(NotificationPlugin):
                     }
                 )
             )
-            return ex
+            raise ex
         try:
             msg = self.format_message(alert)
             if not self.admin_config:
@@ -210,7 +210,7 @@ class EmailHandler(NotificationPlugin):
                         ' notification' % msg
                     }
                 )
-                return "Admin config not found"
+                return
             server = self.get_mail_client()
             server.ehlo()
             if self.admin_config['auth'] != "":
@@ -250,7 +250,7 @@ class EmailHandler(NotificationPlugin):
                     }
                 )
             )
-            return ex
+            return
         finally:
             if server:
                 server.close()
