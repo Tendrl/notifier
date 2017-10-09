@@ -45,7 +45,7 @@ Note: node-agent is required for logging(functional dependency)
 
         For v2_endpoint:
 
-          # For more hosts you can give one more entry with endpoint2, endpoint3, etc
+          # For more hosts you can add more entry with endpoint2, endpoint3, etc
 
           endpoint1:
 
@@ -71,7 +71,7 @@ Note: node-agent is required for logging(functional dependency)
             
         For v3_endpoint:
 
-          # For more hosts you can give one more entry with endpoint2, endpoint3, etc
+          # For more hosts you can add more entry with endpoint2, endpoint3, etc
 
           endpoint1:
 
