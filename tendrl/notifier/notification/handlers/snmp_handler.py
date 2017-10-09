@@ -1,5 +1,6 @@
 from etcd import EtcdException
 from etcd import EtcdKeyNotFound
+
 from pysnmp.error import PySnmpError
 from pysnmp.hlapi import CommunityData
 from pysnmp.hlapi import ContextData
@@ -12,13 +13,14 @@ from pysnmp.hlapi import UdpTransportTarget
 from pysnmp.hlapi import usmDESPrivProtocol
 from pysnmp.hlapi import usmHMACMD5AuthProtocol
 from pysnmp.hlapi import UsmUserData
+
 from tendrl.commons.config import load_config
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
 from tendrl.commons.utils.log_utils import log
 from tendrl.notifier.notification import NotificationPlugin
 
-# USM users fixed snmp engine id
+# USM(User-based Security Model) users fixed snmp engine id
 ENGINE_ID = "8000000001020304"
 # default snmp port
 PORT = 162
@@ -48,7 +50,7 @@ class V2Endpoint(SnmpEndpoint):
 
 class V3Endpoint(SnmpEndpoint):
     # Class encapsulating an SNMPv2c community, host+port pair
-    # 2 represent SNMPv2
+    # 3 represent SNMPv3
     def __init__(self, host_ip, username, auth_key, priv_key):
         super(V3Endpoint, self).__init__(host_ip, 3)
         self.usm_user = UsmUserData(userName=username,
@@ -81,11 +83,11 @@ class SnmpHandler(NotificationPlugin):
             raise ex
 
     def get_alert_destinations(self):
-        snmp_config = load_config(
+        user_configs = load_config(
             'notifier',
             '/etc/tendrl/notifier/snmp.conf.yaml'
         )
-        return snmp_config
+        return user_configs
 
     def format_message(self, alert):
         resource = alert.resource.replace("_", " ").title()
@@ -98,7 +100,11 @@ class SnmpHandler(NotificationPlugin):
         return "[Tendrl Alert] %s, %s: %s-%s" % (
             resource, severity, suffix, message)
 
-    def getPDU(self, message):
+    def get_pdu(self, message):
+        # Properties of the managed object within the device are
+        # arranged in this MIB tree structure. the complete path from the 
+        # top of the tree is ODI
+        # Iso(1).org(3).dod(6).internet(1).private(4).2312.19.1.1
         pdu = [
             ObjectType(ObjectIdentity('1.3.6.1.4.2312.19.1.1'),
                        OctetString(message))]
@@ -115,13 +121,13 @@ class SnmpHandler(NotificationPlugin):
                 ContextData(),
                 'trap',
                 # sequence of custom OID-value pairs
-                self.getPDU(message)))
+                self.get_pdu(message)))
         if errorIndication:
             log(
                 "error",
                 "notifier",
                 {
-                    "message": 'Unable to sent snmp message to %s err:%s %s %s'
+                    "message": 'Unable to send snmp message to %s err:%s %s %s'
                     % (endpoint.host,
                        errorIndication,
                        errorStatus,
@@ -150,13 +156,13 @@ class SnmpHandler(NotificationPlugin):
                 ContextData(),
                 'trap',
                 # sequence of custom OID-value pairs
-                self.getPDU(message)))
+                self.get_pdu(message)))
         if errorIndication:
             log(
                 "error",
                 "notifier",
                 {
-                    "message": 'Unable to sent snmp message to %s err:%s %s %s'
+                    "message": 'Unable to send snmp message to %s err:%s %s %s'
                     % (endpoint.host,
                        errorIndication,
                        errorStatus,
@@ -183,9 +189,7 @@ class SnmpHandler(NotificationPlugin):
     def dispatch_notification(self, alert):
         try:
             self.set_destinations()
-            if (
-                self.user_configs is None
-            ):
+            if self.user_configs is None:
                 log(
                     "error",
                     "notifier",

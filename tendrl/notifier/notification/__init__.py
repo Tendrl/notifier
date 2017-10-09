@@ -123,8 +123,8 @@ class NotificationPluginManager(threading.Thread):
                     if alert.delivered == "False":
                         for plugin in NotificationPlugin.plugins:
                             err = plugin.dispatch_notification(alert)
-                        if not err:
-                            update_alert_delivery(alert)
+                            if not err:
+                                update_alert_delivery(alert)
             except(
                 ValueError,
                 KeyError,
