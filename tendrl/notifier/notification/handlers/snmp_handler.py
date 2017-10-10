@@ -104,9 +104,9 @@ class SnmpHandler(NotificationPlugin):
         # Properties of the managed object within the device are
         # arranged in this MIB tree structure. the complete path from the
         # top of the tree is ODI
-        # Iso(1).org(3).dod(6).internet(1).private(4).2312.19.1.1
+        # Iso(1).org(3).dod(6).internet(1).private(4).2312.19.1.0
         pdu = [
-            ObjectType(ObjectIdentity('1.3.6.1.4.2312.19.1.1'),
+            ObjectType(ObjectIdentity('1.3.6.1.4.2312.19.1.0'),
                        OctetString(message))]
         return pdu
 
