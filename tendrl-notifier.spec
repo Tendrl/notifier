@@ -10,8 +10,8 @@ URL: https://github.com/Tendrl/Notifier
 BuildRequires: pytest
 BuildRequires: systemd
 BuildRequires: python-mock
-BuildRequires: pysnmp
 
+Requires: pysnmp
 Requires: tendrl-commons
 
 %description

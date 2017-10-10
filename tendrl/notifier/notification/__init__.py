@@ -125,6 +125,8 @@ class NotificationPluginManager(threading.Thread):
                             plugin.dispatch_notification(alert)
                         update_alert_delivery(alert)
             except(
+                AttributeError,
+                SyntaxError,
                 ValueError,
                 KeyError,
                 etcd.EtcdException

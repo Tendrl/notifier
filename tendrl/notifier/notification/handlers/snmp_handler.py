@@ -110,9 +110,9 @@ class SnmpHandler(NotificationPlugin):
                        OctetString(message))]
         return pdu
 
-    def trapV2(self, endpoint, message):
+    def trap_v2(self, endpoint, message):
         # Send trap to one endpoint
-        errorIndication, errorStatus, errorIndex, varBinds = next(
+        error_indication, error_status, error_index, var_binds = next(
             sendNotification(
                 SnmpEngine(snmpEngineID=OctetString(
                     hexValue=endpoint.engineid)),
@@ -122,16 +122,16 @@ class SnmpHandler(NotificationPlugin):
                 'trap',
                 # sequence of custom OID-value pairs
                 self.get_pdu(message)))
-        if errorIndication:
+        if error_indication:
             log(
                 "error",
                 "notifier",
                 {
                     "message": 'Unable to send snmp message to %s err:%s %s %s'
                     % (endpoint.host,
-                       errorIndication,
-                       errorStatus,
-                       errorIndex)
+                       error_indication,
+                       error_status,
+                       error_index)
                 }
             )
         else:
@@ -145,9 +145,9 @@ class SnmpHandler(NotificationPlugin):
                 }
             )
 
-    def trapV3(self, endpoint, message):
+    def trap_v3(self, endpoint, message):
         # Send trap to one endpoint
-        errorIndication, errorStatus, errorIndex, varBinds = next(
+        error_indication, error_status, error_index, var_binds = next(
             sendNotification(
                 SnmpEngine(snmpEngineID=OctetString(
                     hexValue=endpoint.engineid)),
@@ -157,16 +157,16 @@ class SnmpHandler(NotificationPlugin):
                 'trap',
                 # sequence of custom OID-value pairs
                 self.get_pdu(message)))
-        if errorIndication:
+        if error_indication:
             log(
                 "error",
                 "notifier",
                 {
                     "message": 'Unable to send snmp message to %s err:%s %s %s'
                     % (endpoint.host,
-                       errorIndication,
-                       errorStatus,
-                       errorIndex)
+                       error_indication,
+                       error_status,
+                       error_index)
                 }
             )
         else:
@@ -182,9 +182,9 @@ class SnmpHandler(NotificationPlugin):
 
     def send_message(self, endpoint, message):
         if endpoint.proto == 2:
-            self.trapV2(endpoint, message)
+            self.trap_v2(endpoint, message)
         elif endpoint.proto == 3:
-            self.trapV3(endpoint, message)
+            self.trap_v3(endpoint, message)
 
     def dispatch_notification(self, alert):
         try:
@@ -209,7 +209,7 @@ class SnmpHandler(NotificationPlugin):
         ) as ex:
             Event(
                 ExceptionMessage(
-                    priority="debug",
+                    priority="error",
                     publisher="notifier",
                     payload={
                         "message": 'Exception caught attempting to set'
@@ -218,7 +218,7 @@ class SnmpHandler(NotificationPlugin):
                     }
                 )
             )
-            return ex
+            return
         try:
             msg = self.format_message(alert)
             for endpoint in self.user_configs:
@@ -239,11 +239,12 @@ class SnmpHandler(NotificationPlugin):
             KeyError,
             ValueError,
             TypeError,
-            AttributeError
+            AttributeError,
+            SyntaxError
         ) as ex:
             Event(
                 ExceptionMessage(
-                    priority="debug",
+                    priority="error",
                     publisher="notifier",
                     payload={
                         "message": 'Exception caught attempting to snmp'
@@ -252,4 +253,3 @@ class SnmpHandler(NotificationPlugin):
                     }
                 )
             )
-            return ex

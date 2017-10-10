@@ -197,7 +197,7 @@ class EmailHandler(NotificationPlugin):
                     }
                 )
             )
-            raise ex
+            return
         try:
             msg = self.format_message(alert)
             if not self.admin_config:
@@ -250,7 +250,7 @@ class EmailHandler(NotificationPlugin):
                     }
                 )
             )
-            return
+
         finally:
             if server:
                 server.close()

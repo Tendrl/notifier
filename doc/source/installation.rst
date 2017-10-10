@@ -37,7 +37,7 @@ Note: node-agent is required for logging(functional dependency)
 
         email_pass = <password corresponding to email_id for authenticating to smtp server>
 
-4. Configuring snmp souce::
+4. Configuring snmp source::
 
     Open /etc/tendrl/notifier/snmp.conf.yaml
 
