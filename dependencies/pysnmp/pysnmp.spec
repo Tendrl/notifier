@@ -14,8 +14,7 @@ BuildRequires: python-setuptools
 BuildRequires: python2-devel
 
 Requires: pysmi
-Requires: pycryptodome
-Requires: pyasn1
+Requires: python2-pyasn1
 
 %description
 SNMP v1/v2c/v3 engine and apps written in pure-Python.

@@ -1,10 +1,10 @@
-Name: pyasn1
+Name: python2-pyasn1
 Version: 0.3.7
 Release: 1%{dist}
 BuildArch: noarch
 Summary: ASN.1 types and codecs
 
-Source0: %{name}-%{version}.tar.gz
+Source0: pyasn1-%{version}.tar.gz
 License: BSD
 Group: Development/Libraries
 Vendor: Ilya Etingof <etingof@gmail.com> <etingof@gmail.com>
@@ -12,6 +12,7 @@ Url: https://github.com/etingof/pyasn1
 
 BuildRequires: python-setuptools
 BuildRequires: python2-devel
+Provides: python-pyasn1
 
 %description
 Pure-Python implementation of ASN.1 types and DER/BER/CER codecs (X.208)
