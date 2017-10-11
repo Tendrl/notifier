@@ -37,6 +37,7 @@ install -Dm 0644 tendrl-notifier.service $RPM_BUILD_ROOT%{_unitdir}/tendrl-notif
 install -Dm 0640 etc/tendrl/notifier.conf.yaml.sample $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/notifier/notifier.conf.yaml
 install -Dm 0640 etc/tendrl/email.conf.yaml.sample $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/notifier/email.conf.yaml
 install -Dm 0640 etc/tendrl/email_auth.conf.yaml.sample $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/notifier/email_auth.conf.yaml.sample
+install -Dm 0640 etc/tendrl/snmp.conf.yaml.sample $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/notifier/snmp.conf.yaml
 install -Dm 644 etc/tendrl/*.sample $RPM_BUILD_ROOT%{_datadir}/tendrl/notifier/.
 
 %post
@@ -61,6 +62,7 @@ py.test -v tendrl/notifier/tests || :
 %{_sysconfdir}/tendrl/notifier/notifier.conf.yaml
 %{_sysconfdir}/tendrl/notifier/email.conf.yaml
 %{_sysconfdir}/tendrl/notifier/email_auth.conf.yaml.sample
+%{_sysconfdir}/tendrl/notifier/snmp.conf.yaml
 %{_unitdir}/tendrl-notifier.service
 
 %changelog
