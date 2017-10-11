@@ -7,7 +7,7 @@ SHORTCOMMIT := $(shell echo $(COMMIT) | cut -c1-7)
 all: srpm
 
 clean:
-	rm -fr pyasn1 python2-pyasn1-0.3.7
+	rm -fr pyasn1 python2-pyasn1-$(VERSION)
 	rm -rf dist/
 	rm -rf $(NAME)-$(VERSION).tar.gz
 	rm -rf $(NAME)-$(VERSION)-$(RELEASE).el7.src.rpm
