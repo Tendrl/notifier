@@ -80,6 +80,7 @@ class NotificationPluginManager(threading.Thread):
 
     def __init__(self):
         super(NotificationPluginManager, self).__init__()
+        self.daemon = True
         try:
             self.load_plugins()
             notification_medium = []
