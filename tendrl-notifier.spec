@@ -11,6 +11,7 @@ BuildRequires: pytest
 BuildRequires: systemd
 BuildRequires: python-mock
 
+Requires: pysnmp
 Requires: tendrl-commons
 
 %description

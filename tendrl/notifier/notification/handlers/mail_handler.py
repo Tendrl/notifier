@@ -250,7 +250,7 @@ class EmailHandler(NotificationPlugin):
                     }
                 )
             )
-            raise ex
+
         finally:
             if server:
                 server.close()
