@@ -1,10 +1,12 @@
 from abc import abstractmethod
-import etcd
-import gevent.event
 import importlib
 import json
 import os
 import six
+import threading
+import time
+
+import etcd
 
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
@@ -54,7 +56,7 @@ class NotificationPlugin(object):
         raise NotImplementedError()
 
 
-class NotificationPluginManager(gevent.greenlet.Greenlet):
+class NotificationPluginManager(threading.Thread):
     def load_plugins(self):
         try:
             path = os.path.dirname(os.path.abspath(__file__)) + '/handlers'
@@ -81,7 +83,7 @@ class NotificationPluginManager(gevent.greenlet.Greenlet):
         try:
             self.load_plugins()
             notification_medium = []
-            self.complete = gevent.event.Event()
+            self.complete = threading.Event()
             for plugin in NotificationPlugin.plugins:
                 notification_medium.append(plugin.name)
             NotificationMedia(
@@ -108,13 +110,13 @@ class NotificationPluginManager(gevent.greenlet.Greenlet):
             )
             raise ex
 
-    def _run(self):
+    def run(self):
         while not self.complete.is_set():
             try:
                 interval = int(
                     NS.config.data["notification_check_interval"]
                 )
-                gevent.sleep(interval)
+                time.sleep(interval)
                 alerts = get_alerts()
                 for alert in alerts:
                     alert.tags = json.loads(alert.tags)

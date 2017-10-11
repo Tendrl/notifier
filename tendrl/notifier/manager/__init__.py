@@ -1,6 +1,7 @@
-import etcd
-import gevent
 import signal
+import threading
+
+import etcd
 
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
@@ -36,6 +37,7 @@ class TendrlNotifierManager(object):
 
     def start(self):
         self.notification_plugin_manager.start()
+        self.notification_plugin_manager.join()
 
     def stop(self):
         self.notification_plugin_manager.stop()
@@ -53,9 +55,9 @@ def main():
         profiler.start()
     tendrl_notifier_manager = TendrlNotifierManager()
     tendrl_notifier_manager.start()
-    complete = gevent.event.Event()
+    complete = threading.Event()
 
-    def terminate():
+    def terminate(signum, frame):
         log(
             "debug",
             "notifier",
@@ -66,8 +68,8 @@ def main():
         tendrl_notifier_manager.stop()
         complete.set()
 
-    gevent.signal(signal.SIGINT, terminate)
-    gevent.signal(signal.SIGTERM, terminate)
+    signal.signal(signal.SIGINT, terminate)
+    signal.signal(signal.SIGTERM, terminate)
 
     while not complete.is_set():
         complete.wait(timeout=1)
