@@ -30,19 +30,20 @@ def get_alerts():
 def update_alert_delivery(alert):
     alert.delivered = "True"
     if type(alert) is NS.tendrl.objects.Alert:
-        if alert.classification == NODE_ALERT:
+        if NODE_ALERT in alert.classification:
             obj = NodeAlert(
                 alert_id=alert.alert_id,
                 node_id=alert.node_id
             ).load()
-        elif alert.classification == CLUSTER_ALERT:
+            obj.delivered = alert.delivered
+            obj.save()
+        if CLUSTER_ALERT in alert.classification:
             obj = ClusterAlert(
                 alert_id=alert.alert_id,
                 tags=alert.tags,
             ).load()
-        # update alert
-        obj.delivered = alert.delivered
-        obj.save()
+            obj.delivered = alert.delivered
+            obj.save()
         alert.save()
     else:
         # After 10 mins it will deleted
