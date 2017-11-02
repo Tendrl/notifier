@@ -13,7 +13,11 @@ etcd_connection: 0.0.0.0
 log_cfg_path: /etc/tendrl/notifier/notifier_logging.yaml
 log_level: DEBUG
 logging_socket_path: /var/run/tendrl/message.sock
+
+# Interval at which all alert notifications are processed and dispatched. Warning, lower interval will result in more resource consumption
+
 notification_check_interval: 30
+
 with_internal_profiling: False
 tags:
 - tendrl/notifier
