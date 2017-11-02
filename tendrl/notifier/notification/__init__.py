@@ -118,6 +118,12 @@ class NotificationPluginManager(threading.Thread):
                     NS.config.data["notification_check_interval"]
                 )
                 time.sleep(interval)
+                lock = etcd.Lock(NS._int.client, 'alerting')
+                lock.acquire(blocking=True,
+                             lock_ttl=60)
+                if lock.is_acquired:
+                    # renew a lock
+                    lock.acquire(lock_ttl=60)
                 alerts = get_alerts()
                 for alert in alerts:
                     alert.tags = json.loads(alert.tags)
@@ -144,6 +150,8 @@ class NotificationPluginManager(threading.Thread):
                         }
                     )
                 )
+            finally:
+                lock.release()
 
     def stop(self):
         self.complete.set()
