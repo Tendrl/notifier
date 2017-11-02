@@ -1,5 +1,5 @@
 Name: tendrl-notifier
-Version: 1.5.3
+Version: 1.5.4
 Release: 1%{?dist}
 BuildArch: noarch
 Summary: Module for Tendrl Notifier
@@ -68,6 +68,9 @@ py.test -v tendrl/notifier/tests || :
 %{_unitdir}/tendrl-notifier.service
 
 %changelog
+* Thu Nov 02 2017 Rohan Kanade <rkanade@redhat.com> - 1.5.4-1
+- Release tendrl-notifier v1.5.4
+
 * Thu Oct 12 2017 Rohan Kanade <rkanade@redhat.com> - 1.5.3-1
 - Release tendrl-notifier v1.5.3
 
