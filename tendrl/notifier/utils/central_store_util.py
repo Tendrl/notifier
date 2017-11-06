@@ -29,6 +29,7 @@ def get_alerts():
 
 def update_alert_delivery(alert):
     alert.delivered = "True"
+    alert.save()
     if type(alert) is NS.tendrl.objects.Alert:
         if NODE_ALERT in alert.classification:
             obj = NodeAlert(
@@ -44,7 +45,6 @@ def update_alert_delivery(alert):
             ).load()
             obj.delivered = alert.delivered
             obj.save()
-        alert.save()
     else:
         # After 10 mins it will deleted
         TTL = 1200
