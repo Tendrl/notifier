@@ -131,13 +131,13 @@ class NotificationPluginManager(threading.Thread):
                             blocking=True,
                             lock_ttl=60
                         )
-                    if lock.is_acquired:
-                        # renew a lock
-                        lock.acquire(lock_ttl=60)
-                        for plugin in NotificationPlugin.plugins:
-                            plugin.dispatch_notification(alert)
-                        update_alert_delivery(alert)
-                        lock.release()
+                        if lock.is_acquired:
+                            # renew a lock
+                            lock.acquire(lock_ttl=60)
+                            for plugin in NotificationPlugin.plugins:
+                                plugin.dispatch_notification(alert)
+                            update_alert_delivery(alert)
+                            lock.release()
             except(
                 AttributeError,
                 SyntaxError,
