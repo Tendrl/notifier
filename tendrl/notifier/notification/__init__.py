@@ -118,7 +118,6 @@ class NotificationPluginManager(threading.Thread):
                 interval = int(
                     NS.config.data["notification_check_interval"]
                 )
-                time.sleep(interval)
                 alerts = get_alerts()
                 for alert in alerts:
                     alert.tags = json.loads(alert.tags)
@@ -160,6 +159,8 @@ class NotificationPluginManager(threading.Thread):
             finally:
                 if isinstance(lock, etcd.lock.Lock) and lock.is_acquired:
                     lock.release()
-
+                    
+                time.sleep(interval)
+                
     def stop(self):
         self.complete.set()
