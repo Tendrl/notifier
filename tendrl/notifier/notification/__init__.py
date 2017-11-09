@@ -114,6 +114,7 @@ class NotificationPluginManager(threading.Thread):
     def run(self):
         while not self.complete.is_set():
             try:
+                lock = None
                 interval = int(
                     NS.config.data["notification_check_interval"]
                 )
@@ -122,9 +123,21 @@ class NotificationPluginManager(threading.Thread):
                 for alert in alerts:
                     alert.tags = json.loads(alert.tags)
                     if alert.delivered == "False":
-                        for plugin in NotificationPlugin.plugins:
-                            plugin.dispatch_notification(alert)
-                        update_alert_delivery(alert)
+                        lock = etcd.Lock(
+                            NS._int.wclient,
+                            'alerting/alerts/%s' % alert.alert_id
+                        )
+                        lock.acquire(
+                            blocking=True,
+                            lock_ttl=60
+                        )
+                        if lock.is_acquired:
+                            # renew a lock
+                            lock.acquire(lock_ttl=60)
+                            for plugin in NotificationPlugin.plugins:
+                                plugin.dispatch_notification(alert)
+                            update_alert_delivery(alert)
+                            lock.release()
             except(
                 AttributeError,
                 SyntaxError,
@@ -144,6 +157,9 @@ class NotificationPluginManager(threading.Thread):
                         }
                     )
                 )
+            finally:
+                if isinstance(lock, etcd.lock.Lock) and lock.is_acquired:
+                    lock.release()
 
     def stop(self):
         self.complete.set()
