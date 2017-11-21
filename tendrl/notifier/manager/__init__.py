@@ -68,8 +68,15 @@ def main():
         tendrl_notifier_manager.stop()
         complete.set()
 
+    def reload_config(signum, frame):
+        NS.config = NS.config.__class__()
+        NS.config.save()
+
+   
     signal.signal(signal.SIGINT, terminate)
     signal.signal(signal.SIGTERM, terminate)
+    signal.signal(signal.SIGHUP, reload_config)
+
 
     while not complete.is_set():
         complete.wait(timeout=1)
