@@ -37,7 +37,6 @@ class TendrlNotifierManager(object):
 
     def start(self):
         self.notification_plugin_manager.start()
-        self.notification_plugin_manager.join()
 
     def stop(self):
         self.notification_plugin_manager.stop()
@@ -65,8 +64,8 @@ def main():
                 "message": 'Signal handler: stopping',
             }
         )
-        tendrl_notifier_manager.stop()
         complete.set()
+        tendrl_notifier_manager.stop()
 
     def reload_config(signum, frame):
         NS.config = NS.config.__class__()
