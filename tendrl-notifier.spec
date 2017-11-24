@@ -43,7 +43,7 @@ install -Dm 0640 etc/tendrl/snmp.conf.yaml.sample $RPM_BUILD_ROOT%{_sysconfdir}/
 install -Dm 644 etc/tendrl/*.sample $RPM_BUILD_ROOT%{_datadir}/tendrl/notifier/.
 
 %post
-systemctl enable tendrl-notifier
+systemctl enable tendrl-notifier >/dev/null 2>&1 || :
 %systemd_post tendrl-notifier.service
 
 %preun
