@@ -16,7 +16,7 @@ logging_socket_path: /var/run/tendrl/message.sock
 
 # Interval at which all alert notifications are processed and dispatched. Warning, lower interval will result in more resource consumption
 
-notification_check_interval: 30
+notification_check_interval: 10
 
 with_internal_profiling: False
 tags:
