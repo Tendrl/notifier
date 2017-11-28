@@ -93,7 +93,7 @@ class EmailHandler(NotificationPlugin):
             suffix = "status changed"
         elif alert.alert_type == ALERT_TYPES[1]:
             suffix = "threshold breached"
-        return "Subject: [Tendrl Alert] %s, %s: %s\n\n%s" % (
+        return "Subject: [Alert] %s, %s: %s\n\n%s" % (
             resource, severity, suffix, message)
 
     def __init__(self):
