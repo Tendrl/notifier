@@ -68,7 +68,7 @@ def main():
         tendrl_notifier_manager.stop()
 
     def reload_config(signum, frame):
-        NS.notifier.ns.setup_common_objects.()
+        NS.notifier.ns.setup_common_objects()
    
     signal.signal(signal.SIGINT, terminate)
     signal.signal(signal.SIGTERM, terminate)
