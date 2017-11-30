@@ -97,8 +97,8 @@ class SnmpHandler(NotificationPlugin):
             suffix = "status changed"
         elif alert.alert_type == ALERT_TYPES[1]:
             suffix = "threshold breached"
-        return "[Tendrl Alert] %s, %s: %s-%s" % (
-            resource, severity, suffix, message)
+        return "[%s], %s: %s-%s" % (
+            severity, resource, suffix, message)
 
     def get_pdu(self, message):
         # Properties of the managed object within the device are

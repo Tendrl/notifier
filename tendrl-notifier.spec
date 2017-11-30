@@ -1,6 +1,6 @@
 Name: tendrl-notifier
 Version: 1.5.4
-Release: 5%{?dist}
+Release: 6%{?dist}
 BuildArch: noarch
 Summary: Module for Tendrl Notifier
 Source0: %{name}-%{version}.tar.gz
@@ -68,6 +68,9 @@ py.test -v tendrl/notifier/tests || :
 %{_unitdir}/tendrl-notifier.service
 
 %changelog
+* Thu Nov 30 2017 Rohan Kanade <rkanade@redhat.com> - 1.5.4-6
+- Bugfixes
+
 * Mon Nov 27 2017 Rohan Kanade <rkanade@redhat.com> - 1.5.4-5
 - Supress service enable message during package update
 
