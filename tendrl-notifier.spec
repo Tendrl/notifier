@@ -61,11 +61,11 @@ py.test -v tendrl/notifier/tests || :
 %doc README.rst
 %license LICENSE
 %{_datadir}/tendrl/notifier/
-%{_sysconfdir}/tendrl/notifier/notifier.conf.yaml
-%{_sysconfdir}/tendrl/notifier/email.conf.yaml
-%{_sysconfdir}/tendrl/notifier/email_auth.conf.yaml.sample
-%{_sysconfdir}/tendrl/notifier/snmp.conf.yaml
 %{_unitdir}/tendrl-notifier.service
+%config(noreplace) %{_sysconfdir}/tendrl/notifier/email.conf.yaml
+%config(noreplace) %{_sysconfdir}/tendrl/notifier/email_auth.conf.yaml.sample
+%config(noreplace) %{_sysconfdir}/tendrl/notifier/notifier.conf.yaml
+%config(noreplace) %{_sysconfdir}/tendrl/notifier/snmp.conf.yaml
 
 %changelog
 * Fri Feb 02 2018 Rohan Kanade <rkanade@redhat.com> - 1.5.5-1
