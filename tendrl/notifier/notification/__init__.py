@@ -10,7 +10,6 @@ import etcd
 
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
-from tendrl.notifier.objects.notification_media import NotificationMedia
 from tendrl.notifier.utils.central_store_util import get_alerts
 from tendrl.notifier.utils.central_store_util import update_alert_delivery
 from tendrl.notifier.utils.util import list_modules_in_package_path
@@ -87,7 +86,7 @@ class NotificationPluginManager(threading.Thread):
             self.complete = threading.Event()
             for plugin in NotificationPlugin.plugins:
                 notification_medium.append(plugin.name)
-            NotificationMedia(
+            NS.notifier.objects.NotificationMedia(
                 media=notification_medium
             ).save()
         except (
@@ -119,8 +118,8 @@ class NotificationPluginManager(threading.Thread):
                     NS.config.data["notification_check_interval"]
                 )
             else:
-                _sleep +=1
-            
+                _sleep += 1
+
             try:
                 lock = None
                 alerts = get_alerts()
@@ -164,8 +163,8 @@ class NotificationPluginManager(threading.Thread):
             finally:
                 if isinstance(lock, etcd.lock.Lock) and lock.is_acquired:
                     lock.release()
-            
+
             time.sleep(_sleep)
-            
+
     def stop(self):
         self.complete.set()

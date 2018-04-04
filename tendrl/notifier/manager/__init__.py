@@ -69,11 +69,10 @@ def main():
 
     def reload_config(signum, frame):
         NS.notifier.ns.setup_common_objects()
-   
+
     signal.signal(signal.SIGINT, terminate)
     signal.signal(signal.SIGTERM, terminate)
     signal.signal(signal.SIGHUP, reload_config)
-
 
     while not complete.is_set():
         complete.wait(timeout=1)
