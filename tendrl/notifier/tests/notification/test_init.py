@@ -1,5 +1,6 @@
 import etcd
 from etcd import Client
+import maps
 import mock
 from mock import MagicMock
 from mock import patch
@@ -7,6 +8,7 @@ import pytest
 
 from tendrl.commons.objects.alert import Alert
 from tendrl.notifier import notification
+from tendrl.notifier.objects.notification_media import NotificationMedia
 from tendrl.notifier.tests import TestCase
 
 
@@ -31,6 +33,9 @@ class TestNotification(TestCase):
         patch_etcd.return_value = etcd.Client()
         patch_read.return_value = etcd.Client()
         self.init()
+        setattr(NS, "notifier", maps.NamedDict())
+        setattr(NS.notifier, "objects", maps.NamedDict(
+            NotificationMedia=NotificationMedia))
         with patch.object(
             notification, 'list_modules_in_package_path'
         ) as list_module:
@@ -73,6 +78,9 @@ class TestNotification(TestCase):
         patch_etcd.return_value = etcd.Client()
         patch_read.return_value = etcd.Client()
         self.init()
+        setattr(NS, "notifier", maps.NamedDict())
+        setattr(NS.notifier, "objects", maps.NamedDict(
+            NotificationMedia=NotificationMedia))
         with patch.object(
             notification, 'list_modules_in_package_path'
         ) as list_module:
