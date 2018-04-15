@@ -79,7 +79,7 @@ class EmailHandler(NotificationPlugin):
         email_ids = []
         email_notifications = etcd_utils.read(key)
         for email_notification in email_notifications.leaves:
-            email = NS._int.wclient.read(
+            email = etcd_utils.read(
                 email_notification.key
             ).value
             email_ids.append(email)
