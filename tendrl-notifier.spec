@@ -1,6 +1,6 @@
 Name: tendrl-notifier
 Version: 1.6.3
-Release: 1%{?dist}
+Release: 2%{?dist}
 BuildArch: noarch
 Summary: Module for Tendrl Notifier
 Source0: %{name}-%{version}.tar.gz
@@ -68,6 +68,9 @@ py.test -v tendrl/notifier/tests || :
 %config(noreplace) %{_sysconfdir}/tendrl/notifier/snmp.conf.yaml
 
 %changelog
+* Fri Apr 20 2018 Rohan Kanade <rkanade@redhat.com> - 1.6.3-2
+- Bugfixes (https://github.com/Tendrl/notifier/milestone/4)
+
 * Wed Apr 18 2018 Rohan Kanade <rkanade@redhat.com> - 1.6.3-1
 - Bugfixes
 
