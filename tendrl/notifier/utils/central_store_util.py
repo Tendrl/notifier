@@ -1,5 +1,6 @@
 from etcd import EtcdException
 from etcd import EtcdKeyNotFound
+import json
 
 CLUSTER_ALERT = "cluster"
 NODE_ALERT = "node"
@@ -25,22 +26,28 @@ def get_alerts():
 
 def update_alert_delivery(alert):
     alert.delivered = True
-    alert.save()
     if type(alert) is NS.tendrl.objects.Alert:
-        if NODE_ALERT in alert.classification:
-            obj = NS.tendrl.objects.NodeAlert(
-                alert_id=alert.alert_id,
-                node_id=alert.node_id
-            ).load()
+        obj = NS.tendrl.objects.Alert(
+            alert_id=alert.alert_id
+        ).load()
+        if alert.severity == obj.severity:
+            obj.tags = json.loads(obj.tags)
             obj.delivered = alert.delivered
             obj.save()
-        if CLUSTER_ALERT in alert.classification:
-            obj = NS.tendrl.objects.ClusterAlert(
-                alert_id=alert.alert_id,
-                tags=alert.tags,
-            ).load()
-            obj.delivered = alert.delivered
-            obj.save()
+            if NODE_ALERT in alert.classification:
+                obj = NS.tendrl.objects.NodeAlert(
+                    alert_id=alert.alert_id,
+                    node_id=alert.node_id
+                ).load()
+                obj.delivered = alert.delivered
+                obj.save()
+            if CLUSTER_ALERT in alert.classification:
+                obj = NS.tendrl.objects.ClusterAlert(
+                    alert_id=alert.alert_id,
+                    tags=alert.tags,
+                ).load()
+                obj.delivered = alert.delivered
+                obj.save()
     else:
         # After 10 mins it will deleted
         TTL = 1200
