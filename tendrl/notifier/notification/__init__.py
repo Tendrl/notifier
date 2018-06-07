@@ -1,4 +1,6 @@
 from abc import abstractmethod
+from datetime import datetime
+from dateutil import parser
 import importlib
 import json
 import os
@@ -124,28 +126,33 @@ class NotificationPluginManager(threading.Thread):
                 lock = None
                 alerts = get_alerts()
                 for alert in alerts:
-                    alert.tags = json.loads(alert.tags)
-                    if str(alert.delivered).lower() == "false":
-                        lock = etcd.Lock(
-                            NS._int.wclient,
-                            'alerting/alerts/%s' % alert.alert_id
-                        )
-                        lock.acquire(
-                            blocking=True,
-                            lock_ttl=60
-                        )
-                        if lock.is_acquired:
-                            # renew a lock
-                            lock.acquire(lock_ttl=60)
-                            for plugin in NotificationPlugin.plugins:
-                                plugin.dispatch_notification(alert)
-                            update_alert_delivery(alert)
-                            lock.release()
+                    if (datetime.utcnow() - parser.parse(
+                        alert.time_stamp
+                    ).replace(tzinfo=None)).seconds >= 120:
+                        # no changes in alert for last 120 sec
+                        alert.tags = json.loads(alert.tags)
+                        if str(alert.delivered).lower() == "false":
+                            lock = etcd.Lock(
+                                NS._int.wclient,
+                                'alerting/alerts/%s' % alert.alert_id
+                            )
+                            lock.acquire(
+                                blocking=True,
+                                lock_ttl=60
+                            )
+                            if lock.is_acquired:
+                                # renew a lock
+                                lock.acquire(lock_ttl=60)
+                                for plugin in NotificationPlugin.plugins:
+                                    plugin.dispatch_notification(alert)
+                                update_alert_delivery(alert)
+                                lock.release()
             except(
                 AttributeError,
                 SyntaxError,
                 ValueError,
                 KeyError,
+                TypeError,
                 etcd.EtcdException
             )as ex:
                 Event(
