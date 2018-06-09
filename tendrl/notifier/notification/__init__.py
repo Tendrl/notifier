@@ -16,6 +16,8 @@ from tendrl.notifier.utils.central_store_util import get_alerts
 from tendrl.notifier.utils.central_store_util import update_alert_delivery
 from tendrl.notifier.utils.util import list_modules_in_package_path
 
+CLEARING_ALERT = "INFO"
+
 
 class PluginMount(type):
 
@@ -126,27 +128,30 @@ class NotificationPluginManager(threading.Thread):
                 lock = None
                 alerts = get_alerts()
                 for alert in alerts:
-                    if (datetime.utcnow() - parser.parse(
-                        alert.time_stamp
-                    ).replace(tzinfo=None)).seconds >= 120:
-                        # no changes in alert for last 120 sec
-                        alert.tags = json.loads(alert.tags)
-                        if str(alert.delivered).lower() == "false":
-                            lock = etcd.Lock(
-                                NS._int.wclient,
-                                'alerting/alerts/%s' % alert.alert_id
-                            )
-                            lock.acquire(
-                                blocking=True,
-                                lock_ttl=60
-                            )
-                            if lock.is_acquired:
-                                # renew a lock
-                                lock.acquire(lock_ttl=60)
-                                for plugin in NotificationPlugin.plugins:
-                                    plugin.dispatch_notification(alert)
-                                update_alert_delivery(alert)
-                                lock.release()
+                    if alert.severity == CLEARING_ALERT:
+                        if (datetime.utcnow() - parser.parse(
+                            alert.time_stamp
+                        ).replace(tzinfo=None)).seconds < 120:
+                            # If alert in clearing alert then wait for
+                            # 120 sec to confirm no changes in alert
+                            continue
+                    alert.tags = json.loads(alert.tags)
+                    if str(alert.delivered).lower() == "false":
+                        lock = etcd.Lock(
+                            NS._int.wclient,
+                            'alerting/alerts/%s' % alert.alert_id
+                        )
+                        lock.acquire(
+                            blocking=True,
+                            lock_ttl=60
+                        )
+                        if lock.is_acquired:
+                            # renew a lock
+                            lock.acquire(lock_ttl=60)
+                            for plugin in NotificationPlugin.plugins:
+                                plugin.dispatch_notification(alert)
+                            update_alert_delivery(alert)
+                            lock.release()
             except(
                 AttributeError,
                 SyntaxError,
