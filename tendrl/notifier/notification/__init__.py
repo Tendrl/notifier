@@ -132,8 +132,8 @@ class NotificationPluginManager(threading.Thread):
                         if (datetime.utcnow() - parser.parse(
                             alert.time_stamp
                         ).replace(tzinfo=None)).seconds < 120:
-                            # If alert in clearing alert then wait for
-                            # 120 sec to confirm no changes in alert
+                            # If alert is info then wait for 120 sec
+                            # to confirm no changes in alert severity
                             continue
                     alert.tags = json.loads(alert.tags)
                     if str(alert.delivered).lower() == "false":
