@@ -1,4 +1,6 @@
 from abc import abstractmethod
+from datetime import datetime
+from dateutil import parser
 import importlib
 import json
 import os
@@ -13,6 +15,8 @@ from tendrl.commons.message import ExceptionMessage
 from tendrl.notifier.utils.central_store_util import get_alerts
 from tendrl.notifier.utils.central_store_util import update_alert_delivery
 from tendrl.notifier.utils.util import list_modules_in_package_path
+
+CLEARING_ALERT = "INFO"
 
 
 class PluginMount(type):
@@ -124,6 +128,13 @@ class NotificationPluginManager(threading.Thread):
                 lock = None
                 alerts = get_alerts()
                 for alert in alerts:
+                    if alert.severity == CLEARING_ALERT:
+                        if (datetime.utcnow() - parser.parse(
+                            alert.time_stamp
+                        ).replace(tzinfo=None)).seconds < 120:
+                            # If alert is info then wait for 120 sec
+                            # to confirm no changes in alert severity
+                            continue
                     alert.tags = json.loads(alert.tags)
                     if str(alert.delivered).lower() == "false":
                         lock = etcd.Lock(
@@ -146,6 +157,7 @@ class NotificationPluginManager(threading.Thread):
                 SyntaxError,
                 ValueError,
                 KeyError,
+                TypeError,
                 etcd.EtcdException
             )as ex:
                 Event(
