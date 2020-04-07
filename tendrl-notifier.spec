@@ -1,19 +1,19 @@
 Name: tendrl-notifier
 Version: 1.6.3
-Release: 4%{?dist}
+Release: 5%{?dist}
 BuildArch: noarch
 Summary: Module for Tendrl Notifier
 Source0: %{name}-%{version}.tar.gz
 License: LGPLv2+
 URL: https://github.com/Tendrl/Notifier
 
-BuildRequires: pytest
+BuildRequires: python3-pytest
 BuildRequires: systemd
-BuildRequires: python-mock
+BuildRequires: python3-mock
 
-Requires: python2-pyasn1 >= 0.3.7 
-Requires: python2-crypto >= 2.6.1
-Requires: pysnmp
+Requires: python3-pyasn1 >= 0.3.7
+Requires: python3-crypto >= 2.6.1
+Requires: python3-pysnmp
 Requires: tendrl-commons
 
 %description
@@ -26,13 +26,13 @@ Python module for Tendrl Notifier
 rm -rf %{name}.egg-info
 
 %build
-%{__python} setup.py build
+%{__python3} setup.py build
 
 # remove the sphinx-build leftovers
 rm -rf html/.{doctrees,buildinfo}
 
 %install
-%{__python} setup.py install --single-version-externally-managed -O1 --root=$RPM_BUILD_ROOT --record=INSTALLED_FILES
+%{__python3} setup.py install --single-version-externally-managed -O1 --root=$RPM_BUILD_ROOT --record=INSTALLED_FILES
 install -m  0755  --directory $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/notifier
 install -m  0755  --directory $RPM_BUILD_ROOT%{_datadir}/tendrl/notifier
 install -Dm 0644 tendrl-notifier.service $RPM_BUILD_ROOT%{_unitdir}/tendrl-notifier.service
@@ -68,6 +68,9 @@ py.test -v tendrl/notifier/tests || :
 %config(noreplace) %{_sysconfdir}/tendrl/notifier/snmp.conf.yaml
 
 %changelog
+* Tue Apr 18 2020 Timothy Asir Jeyasingh <tjeyasin@redhat.com> - 1.6.3-5
+- Add python3 support changes
+
 * Mon Jun 18 2018 Shubhendu Tripathi <shtripat@redhat.com> - 1.6.3-4
 - Bugfixe (https://github.com/Tendrl/notifier/milestone/6)
 
