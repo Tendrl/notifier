@@ -159,7 +159,7 @@ class NotificationPluginManager(threading.Thread):
                 KeyError,
                 TypeError,
                 etcd.EtcdException
-            )as ex:
+            ) as ex:
                 Event(
                     ExceptionMessage(
                         priority="debug",

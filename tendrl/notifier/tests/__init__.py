@@ -1,4 +1,4 @@
-import __builtin__
+import builtins
 import etcd
 from etcd import Client
 import maps
@@ -17,7 +17,7 @@ class TestCase(object):
         patch_read.return_value = etcd.Client()
         patch_write.return_value = etcd.Client()
         patch_client.return_value = etcd.Client()
-        setattr(__builtin__, "NS", maps.NamedDict())
+        setattr(builtins, "NS", maps.NamedDict())
         setattr(NS, "_int", maps.NamedDict())
         NS._int.etcd_kwargs = {
             'port': 1,
